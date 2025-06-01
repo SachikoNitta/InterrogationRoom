@@ -1,4 +1,2 @@
 project_id = "interrogation-room"
 location_id = "asia-northeast1"
-firestore_database_id = "interrogation-room"
-
