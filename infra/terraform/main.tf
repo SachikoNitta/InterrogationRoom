@@ -57,7 +57,7 @@ resource "google_cloud_run_service" "app" {
   template {
     spec {
       containers {
-        image = "gcr.io/cloudrun/hello" # 後でNext.jsアプリのイメージに差し替え
+        image = var.image_url
       }
       service_account_name = google_service_account.app.email
     }

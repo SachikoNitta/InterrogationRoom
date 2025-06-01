@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
+    console.error(error); // errorを利用してESLintエラーを回避
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

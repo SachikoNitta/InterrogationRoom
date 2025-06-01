@@ -16,7 +16,16 @@
 - [ゲームシステム仕様](./docs/game/game_system.md)
 - [プロンプト例](./docs/game/prompts/system.md)
 
-## GCPセットアップ
+## セットアップ
+
+このプロジェクトは GCP を使用するため、Terraform を導入しています。  
+以下を自動で構築可能です：
+
+- Cloud Run サービス
+- Firestore（+ ルール設定）
+- サービスアカウントとIAM構成
+
+### GCPセットアップ
 
 1. **GCPプロジェクトの作成**
    - [Google Cloud Console](https://console.cloud.google.com/) で新しいプロジェクトを作成します。
@@ -32,7 +41,7 @@
 4. **Vertex AIの有効化**
    - 「APIとサービス」>「ライブラリ」から「Vertex AI API」を検索し有効化します。
 
-## セットアップ
+### Terraformの実行
 
 ```bash
 cd terraform
@@ -49,12 +58,6 @@ terraform plan
 # 実行！
 terraform apply
 ```
-
-## ディレクトリ構成
-
-- `app/` … Next.jsアプリ本体
-- `docs/` … ドキュメント
-- `terraform/` … インフラ構成管理
 
 ## ライセンス
 

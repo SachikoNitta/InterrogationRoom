@@ -8,3 +8,8 @@ variable "location_id" {
   type        = string
   default     = "asia-northeast1"
 }
+
+variable "image_url" {
+  description = "Cloud RunにデプロイするDockerイメージのURL"
+  type        = string
+}
