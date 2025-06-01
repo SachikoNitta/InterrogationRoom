@@ -74,3 +74,11 @@ resource "google_cloud_run_service" "app" {
     google_project_service.firebase
   ]
 }
+
+resource "google_cloud_run_service_iam_member" "public" {
+  location = google_cloud_run_service.app.location
+  project  = var.project_id
+  service  = google_cloud_run_service.app.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
