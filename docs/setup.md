@@ -88,3 +88,8 @@ gcloud builds submit --config=cloudbuild.yml ..
    - サービスアカウントへのロール付与や、各種APIの有効化も自動で行います。
    - 既存リソースとの差分を検出し、必要な変更のみを適用します（インフラの状態をコードで一元管理）。
 
+### アプリの公開
+- GCのCloud Runのプロダクトページに移動
+- 「サービス」からこのプロジェクトを選択
+- 「セキュリティ」タブの「認証」で「Allow unauthenticated invocations」にチェックをし、保存
+（TODO：この操作をTerraformに含む）
