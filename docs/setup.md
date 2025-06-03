@@ -15,49 +15,68 @@
 
 ## 手順
 
-1. gcloudのデフォルトプロジェクト確認・切り替え
+## 各種変数の確認方法
+このアプリのセットアップに使用する変数はそれぞれ以下の方法でご確認ください。
+- [YOUR_PROJECT_ID]: コンソール上部でプロジェクトを切り替え > IAMと管理 > 設定 > プロジェクトID
+- [YOUR_PROJECT_NO]: コンソール上部でプロジェクトを切り替え > IAMと管理 > 設定 > プロジェクト番号
 
-Cloud BuildやTerraformを実行する前に、gcloud CLIのデフォルトプロジェクトが正しいか確認・設定してください。
-
--  現在のプロジェクトIDを確認
-   ```sh
-   gcloud config get-value project
-   ```
--  プロジェクトIDを切り替えたい場合
-   ```sh
-   gcloud config set project あなたのGCPプロジェクトID
-   ```
-
-
-1. GCP認証
+### gcloudコマンドの設定
+現在のプロジェクトIDを確認
+```sh
+gcloud config get-value project
+```
+プロジェクトIDを切り替えたい場合
+```sh
+gcloud config set project [YOUR_PROJECT_ID]
+```
+GCP認証を行う
 ```sh
 gcloud auth application-default login
 ```
-
-2. infra/terraform.tfvarsの作成
+ログインできていることを確認
+```sh
+gcloud auth list
+```
+### infra/terraform.tfvarsの作成
 `infra/terraform/terraform.tfvars` に以下の内容を記載します。
 ```hcl
-project_id  = "あなたのGCPプロジェクトID"
+project_id  = "[YOUR_PROJECT_ID]"
 location_id = "asia-northeast1"
-image_url   = "gcr.io/あなたのGCPプロジェクトID/next-app"
+image_url   = "gcr.io/[YOUR_PROJECT_ID]/next-app"
 ```
 
-3. Cloud Buildサービスアカウントに権限を付与
-このプロジェクトではTerraformでGCP上の権限も付与しますが、Cloud Buildのみ初回は手動で権限設定が必要です。（Terraform自体をCloud Buildから実行するため）。以下の手順で権限を付与してください。
+### Cloud Buildサービスアカウントにロールを付与
+```sh
+PROJECT_ID=[YOUR_PROJECT_ID]
+SA=[YOUR_PROJECT_NO]@cloudbuild.gserviceaccount.com
 
-1. GCPコンソールにアクセスし、対象プロジェクトを選択します。
-2. 左メニューから「Cloud Build」→「設定」を開きます。
-3. Cloud Buildのサービスアカウント（例: `[PROJECT_NUMBER]@cloudbuild.gserviceaccount.com`）が選択されていることを確認します。
-4. 「Cloud Run管理者」「Firebase 管理者」「サービス アカウント ユーザー」を有効化します。（TODO：いずれかでも大丈夫かも
+for ROLE in
+  roles/run.admin
+  roles/iam.serviceAccountUser
+  roles/resourcemanager.projectIamAdmin
+  roles/storage.admin
+  roles/firebase.admin
+  roles/datastore.user
+  roles/aiplatform.user
+do
+  gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$SA" \
+    --role="$ROLE"
+done
+```sh
+付与できているロールを確認
+```
+gcloud projects get-iam-policy [YOUR_PROJECT_ID] \
+  --flatten="bindings[].members" \
+  --format='table(bindings.role)' \
+  --filter="bindings.members:[YOUR_PROJECT_NO]@cloudbuild.gserviceaccount.com"
+```
 
-
-5. Cloud Buildによるビルド＆デプロイ
-infraディレクトリで以下を実行します。
+###  Cloud Buildによるビルド＆デプロイ
 ```sh
 cd infra
 gcloud builds submit --config=cloudbuild.yml ..
 ```
-
 このコマンドにより以下が実行されます。
 
 1. `./app`ディレクトリのNext.jsアプリをDockerイメージ（gcr.io/$PROJECT_ID/next-app）としてビルドします。
