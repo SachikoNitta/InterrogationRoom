@@ -10,54 +10,13 @@
 
 詳細な仕様や設計資料は [docs/](./docs/) ディレクトリにまとめています。
 
-- [仕様書（spec.md）](./docs/spec.md)
+- [システム構成](./docs/architecture.md)
+- [セットアップ手順](./docs/setup.md)
 - [API仕様（OpenAPI）](./docs/api/openapi.yml)
+- [認証仕様](./docs/auth/auth.md)
 - [データベース仕様](./docs/db/firestore.md)
-- [ゲームシステム仕様](./docs/game/game_system.md)
-- [プロンプト例](./docs/game/prompts/system.md)
-
-## セットアップ
-
-このプロジェクトは GCP を使用するため、Terraform を導入しています。  
-以下を自動で構築可能です：
-
-- Cloud Run サービス
-- Firestore（+ ルール設定）
-- サービスアカウントとIAM構成
-
-### GCPセットアップ
-
-1. **GCPプロジェクトの作成**
-   - [Google Cloud Console](https://console.cloud.google.com/) で新しいプロジェクトを作成します。
-
-2. **サービスアカウントとAPIキーの作成**
-   - IAMと管理 > サービスアカウント から新規サービスアカウントを作成し、必要なロール（Firestore管理者、Vertex AIユーザーなど）を付与します。
-   - サービスアカウントの鍵（JSON）を作成・ダウンロードします。
-   - 必要に応じてAPIキーも作成します。
-
-3. **Firestoreの有効化**
-   - コンソールの「Firestore」からデータベースを作成し、ネイティブモードを選択します。
-
-4. **Vertex AIの有効化**
-   - 「APIとサービス」>「ライブラリ」から「Vertex AI API」を検索し有効化します。
-
-### Terraformの実行
-
-```bash
-cd terraform
-
-# 認証（さっき作ったサービスアカウントキー使用）
-export GOOGLE_APPLICATION_CREDENTIALS="your-service-account-key.json"
-
-# Terraform初期化
-terraform init
-
-# 実際に作成されるリソース確認
-terraform plan
-
-# 実行！
-terraform apply
-```
+- [ゲームシステム仕様](./docs/game/flow.md)
+- [プロンプト例](./docs/game/system_prompt.md)
 
 ## ライセンス
 

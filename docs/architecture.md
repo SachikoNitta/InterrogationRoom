@@ -11,16 +11,7 @@
 - インフラ管理: Terraform
 - アプリケーションホスティング: Cloud Run（GCP）
 
-## データフロー
-1. ユーザーが Next.js アプリにアクセス
-2. Firebase Auth 経由でログインし、JWT を取得
-3. フロントエンドは JWT を API に送信（リクエストヘッダー）
-4. API が Firebase Admin SDK で JWT を検証し、ユーザーIDを取得
-5. 必要に応じて Firestore からデータを取得・保存
-6. Gemini にプロンプトを送信し、応答を取得
-7. レスポンスを UI に表示
-
-☁️ 使用 GCP サービス
+## 使用 GCP サービス
 - Cloud Run（アプリケーションホスティング）
 - Firebase Authentication（SSO 認証）
 - Firestore（ゲーム状態とログの保存）
@@ -38,7 +29,7 @@ interrogation_room/
 │   ├── auth/
 │   ├── db/
 │   └── game/
-├── terraform/          # GCP用インフラ設定
+├── infra/          # GCP用インフラ設定
 └── README.md
 
 ## ステートレス構成について
