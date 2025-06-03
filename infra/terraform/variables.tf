@@ -13,3 +13,8 @@ variable "image_url" {
   description = "Cloud RunにデプロイするDockerイメージのURL"
   type        = string
 }
+
+variable "fast_image_url" {
+  description = "Flask API用のDockerイメージURL"
+  type        = string
+}

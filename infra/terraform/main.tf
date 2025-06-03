@@ -74,3 +74,22 @@ resource "google_cloud_run_service" "app" {
     google_project_service.firebase
   ]
 }
+
+resource "google_cloud_run_service" "fast" {
+  name     = "fast-api"
+  location = var.location_id
+  template {
+    spec {
+      containers {
+        image = var.fast_image_url
+      }
+    }
+  }
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+  depends_on = [
+    google_project_service.run
+  ]
+}

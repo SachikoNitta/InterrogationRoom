@@ -43,6 +43,7 @@ gcloud auth list
 project_id  = "[YOUR_PROJECT_ID]"
 location_id = "asia-northeast1"
 image_url   = "gcr.io/[YOUR_PROJECT_ID]/next-app"
+fast_image_url = "gcr.io/[YOUR_PROJECT_ID]/fast-api"
 ```
 
 ### Cloud Buildサービスアカウントにロールを付与
