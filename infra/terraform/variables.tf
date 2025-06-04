@@ -15,6 +15,6 @@ variable "image_url" {
 }
 
 variable "fast_image_url" {
-  description = "Flask API用のDockerイメージURL"
+  description = "Fast API用のDockerイメージURL"
   type        = string
 }
