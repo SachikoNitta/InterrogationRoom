@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 ### APIサーバー起動
 ```sh
-python main.py
+uvicorn main:app --reload
 ```
 
 ---

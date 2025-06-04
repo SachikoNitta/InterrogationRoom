@@ -1,6 +1,6 @@
 # Firestore Data Structure
 
-このドキュメントでは、Interrogation Roomアプリで使用するFirestoreのデータ構造を定義します。
+---
 
 ## users/{userId}
 
@@ -32,6 +32,8 @@
   }
 }
 ```
+
+---
 
 ## cases/{caseId}
 

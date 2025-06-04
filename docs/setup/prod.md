@@ -1,11 +1,13 @@
 # GCPインフラ構築・デプロイ手順（Cloud Build + Terraform）
 
-このプロジェクトのインフラ（Firestore, Cloud Run, Vertex AI, Firebase Auth, サービスアカウント等）はTerraformで管理し、アプリのビルド・デプロイはCloud Buildで自動化します。
+---
 
 ## 前提
 - GCPプロジェクトが作成済みであること
 - macOSで作業していること
 - gcloud CLIとTerraformがインストール済みであること
+
+---
 
 ## 構成概要
 - インフラ管理: infra/terraformディレクトリ（Terraform）
@@ -13,12 +15,18 @@
 - Dockerイメージ管理: Google Container Registry (GCR)
 - Cloud Run: Next.jsアプリをデプロイ
 
+---
+
 ## 手順
+
+---
 
 ## 各種変数の確認方法
 このアプリのセットアップに使用する変数はそれぞれ以下の方法でご確認ください。
 - [YOUR_PROJECT_ID]: コンソール上部でプロジェクトを切り替え > IAMと管理 > 設定 > プロジェクトID
 - [YOUR_PROJECT_NO]: コンソール上部でプロジェクトを切り替え > IAMと管理 > 設定 > プロジェクト番号
+
+---
 
 ### gcloudコマンドの設定
 現在のプロジェクトIDを確認
@@ -37,6 +45,9 @@ gcloud auth application-default login
 ```sh
 gcloud auth list
 ```
+
+---
+
 ### infra/terraform.tfvarsの作成
 `infra/terraform/terraform.tfvars` に以下の内容を記載します。
 ```hcl
@@ -45,6 +56,8 @@ location_id = "asia-northeast1"
 image_url   = "gcr.io/[YOUR_PROJECT_ID]/next-app"
 fast_image_url = "gcr.io/[YOUR_PROJECT_ID]/fast-api"
 ```
+
+---
 
 ### Cloud Buildサービスアカウントにロールを付与
 ```sh
@@ -64,7 +77,7 @@ do
     --member="serviceAccount:$SA" \
     --role="$ROLE"
 done
-```sh
+```
 付与できているロールを確認
 ```
 gcloud projects get-iam-policy [YOUR_PROJECT_ID] \
@@ -72,6 +85,8 @@ gcloud projects get-iam-policy [YOUR_PROJECT_ID] \
   --format='table(bindings.role)' \
   --filter="bindings.members:[YOUR_PROJECT_NO]@cloudbuild.gserviceaccount.com"
 ```
+
+---
 
 ###  Cloud Buildによるビルド＆デプロイ
 ```sh
@@ -88,6 +103,8 @@ gcloud builds submit --config=cloudbuild.yml ..
    - Cloud Runには、直前でビルド・pushされたDockerイメージ（image_urlで指定）をデプロイします。
    - サービスアカウントへのロール付与や、各種APIの有効化も自動で行います。
    - 既存リソースとの差分を検出し、必要な変更のみを適用します（インフラの状態をコードで一元管理）。
+
+---
 
 ### アプリの公開
 - GCのCloud Runのプロダクトページに移動
