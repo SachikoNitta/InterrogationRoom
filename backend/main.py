@@ -3,6 +3,6 @@ from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-@app.get("/healthz")
+@app.get("/health")
 def healthz():
     return JSONResponse(content={"status": "ok"})
