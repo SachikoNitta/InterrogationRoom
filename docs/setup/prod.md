@@ -111,3 +111,47 @@ gcloud builds submit --config=cloudbuild.yml ..
 - 「サービス」からこのプロジェクトを選択
 - 「セキュリティ」タブの「認証」で「Allow unauthenticated invocations」にチェックをし、保存
 （TODO：この操作をTerraformに含む）
+
+---
+
+## Cloud Buildによる本番運用フロー（2025年6月更新）
+
+本番運用では、Cloud Buildの構成ファイルを用途ごとに分離し、以下のように運用します。
+
+### 1. アプリのデプロイ（ソースコード変更時）
+
+アプリのコード（app/ または backend/）を変更した場合は、下記コマンドでデプロイします。
+
+```sh
+cd infra
+# cloudbuild.yml または cloudbuild-app.yml どちらでもOK
+# cloudbuild.ymlはNext.js/fast-api両方のデプロイを行う
+
+gcloud builds submit --config=cloudbuild.yml ..
+```
+- Next.js（app/）とFastAPI（backend/）のDockerイメージをビルド＆GCRにpush
+- Cloud Runサービスを直接更新
+- **Terraformは実行されません**
+
+### 2. インフラの変更（Terraform管理リソースの追加・変更時）
+
+インフラ構成（infra/terraform/*.tfやterraform.tfvars）を変更した場合は、下記コマンドでTerraformを実行します。
+
+```sh
+cd infra
+# cloudbuild-infra.ymlを指定
+
+gcloud builds submit --config=cloudbuild-infra.yml ..
+```
+- TerraformでGCPリソースの作成・更新・削除を実行
+- アプリのDockerイメージやCloud Runサービスは変更されません
+
+TODO: 2度目以降fast APIのデプロイが終わらないので調査
+
+---
+
+## 補足
+- アプリのデプロイとインフラの変更は、**用途ごとにコマンドを分けて実行**してください。
+- どちらのCloud Buildも、GCPコンソールのCloud Build画面で進捗やログを確認できます。
+- 必要に応じて、cloudbuild-app.yml（アプリのみデプロイ）も利用可能です。
+- インフラ変更時は、事前に`terraform plan`で差分を確認することを推奨します。

@@ -1,0 +1,10 @@
+steps:
+  # terraform apply
+  - name: 'hashicorp/terraform:light'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        cd infra/terraform
+        terraform init
+        terraform apply -auto-approve
