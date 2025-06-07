@@ -1,3 +1,4 @@
+# Firestoreの有効化
 resource "google_firestore_database" "firestore" {
   project     = var.project_id
   name        = "(default)"
@@ -26,6 +27,10 @@ resource "google_project_service" "firebase" {
   project = var.project_id
   service = "firebase.googleapis.com"
 }
+resource "google_project_service" "secretmanager" {
+  project = var.project_id
+  service = "secretmanager.googleapis.com"
+}
 
 # サービスアカウント作成
 resource "google_service_account" "app" {
@@ -50,7 +55,7 @@ resource "google_project_iam_member" "app_vertex" {
   member  = "serviceAccount:${google_service_account.app.email}"
 }
 
-# Cloud Run サービス雛形（イメージは後で指定）
+# Cloud RunにNext.jsを載せる
 resource "google_cloud_run_service" "app" {
   name     = "interrogation-app"
   location = var.location_id
@@ -75,6 +80,7 @@ resource "google_cloud_run_service" "app" {
   ]
 }
 
+# Cloud RunにFast APIを載せる
 resource "google_cloud_run_service" "fast" {
   name     = "fast-api"
   location = var.location_id
@@ -83,6 +89,7 @@ resource "google_cloud_run_service" "fast" {
       containers {
         image = var.fast_image_url
       }
+      service_account_name = google_service_account.app.email
     }
   }
   traffic {
@@ -90,6 +97,22 @@ resource "google_cloud_run_service" "fast" {
     latest_revision = true
   }
   depends_on = [
-    google_project_service.run
+    google_project_service.run,
+    google_project_service.firestore,
+    google_project_service.vertex,
+    google_project_service.iam,
+    google_project_service.firebase
   ]
+}
+
+# Secret Managerの設定
+resource "google_secret_manager_secret" "system_prompt" {
+  secret_id = "system_prompt"
+  replication {
+    user_managed {
+      replicas {
+        location = "asia-northeast1"
+      }
+    }
+  }
 }

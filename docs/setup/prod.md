@@ -91,20 +91,21 @@ gcloud projects get-iam-policy [YOUR_PROJECT_ID] \
 ###  Cloud Buildによるビルド＆デプロイ
 ```sh
 cd infra
-gcloud builds submit --config=cloudbuild.yml ..
+gcloud builds submit --config=cloudbuild-infra.yml ..
+gcloud builds submit --config=cloudbuild-app.yml ..
 ```
-このコマンドにより以下が実行されます。
 
-1. `./app`ディレクトリのNext.jsアプリをDockerイメージ（gcr.io/$PROJECT_ID/next-app）としてビルドします。
-2. ビルドしたDockerイメージをGoogle Container Registry（GCR）にpushします。
-3. `infra/terraform`ディレクトリに移動し、Terraformの初期化（terraform init）を行います。
-4. Terraformの構成ファイル（main.tf等）をもとに、以下の処理を自動で行います。
-   - Firestore、Cloud Run、Vertex AI、Firebase Auth、サービスアカウントなど、GCP上の必要なリソースを作成・更新・削除します。
-   - Cloud Runには、直前でビルド・pushされたDockerイメージ（image_urlで指定）をデプロイします。
-   - サービスアカウントへのロール付与や、各種APIの有効化も自動で行います。
-   - 既存リソースとの差分を検出し、必要な変更のみを適用します（インフラの状態をコードで一元管理）。
+アプリ(/appもしくは/backend以下)のみを更新したい場合
+```sh
+cd infra
+gcloud builds submit --config=cloudbuild-app.yml ..
+```
 
----
+インフラ（/infra以下）のみを更新したい場合
+```sh
+cd infra
+gcloud builds submit --config=cloudbuild-infra.yml ..
+```
 
 ### アプリの公開
 - GCのCloud Runのプロダクトページに移動
@@ -114,39 +115,18 @@ gcloud builds submit --config=cloudbuild.yml ..
 
 ---
 
-## Cloud Buildによる本番運用フロー（2025年6月更新）
+## Secret Managerにシステムプロンプトを登録する
 
-本番運用では、Cloud Buildの構成ファイルを用途ごとに分離し、以下のように運用します。
+GCPのSecret Managerに「system_prompt」というキーでシークレットを作成し、システムプロンプトの内容を保存してください。
 
-### 1. アプリのデプロイ（ソースコード変更時）
+1. GCPコンソールで「Secret Manager」に移動
+2. 「シークレットを作成」をクリック
+3. 名前に `system_prompt` を入力
+4. シークレットの値にシステムプロンプトの内容（例: あなたは事件の容疑者です。...）を入力
+5. 作成を完了
 
-アプリのコード（app/ または backend/）を変更した場合は、下記コマンドでデプロイします。
-
-```sh
-cd infra
-# cloudbuild.yml または cloudbuild-app.yml どちらでもOK
-# cloudbuild.ymlはNext.js/fast-api両方のデプロイを行う
-
-gcloud builds submit --config=cloudbuild.yml ..
-```
-- Next.js（app/）とFastAPI（backend/）のDockerイメージをビルド＆GCRにpush
-- Cloud Runサービスを直接更新
-- **Terraformは実行されません**
-
-### 2. インフラの変更（Terraform管理リソースの追加・変更時）
-
-インフラ構成（infra/terraform/*.tfやterraform.tfvars）を変更した場合は、下記コマンドでTerraformを実行します。
-
-```sh
-cd infra
-# cloudbuild-infra.ymlを指定
-
-gcloud builds submit --config=cloudbuild-infra.yml ..
-```
-- TerraformでGCPリソースの作成・更新・削除を実行
-- アプリのDockerイメージやCloud Runサービスは変更されません
-
-TODO: 2度目以降fast APIのデプロイが終わらないので調査
+- このシークレットはアプリケーションから自動的に取得されます。
+- Terraformで管理する場合は、`google_secret_manager_secret` と `google_secret_manager_secret_version` リソースを利用してください。
 
 ---
 

@@ -35,6 +35,7 @@ cd backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+export GOOGLE_CLOUD_PROJECT=[YOUR_PROJECT_ID]
 ```
 
 ### APIサーバー起動
@@ -57,7 +58,7 @@ terraform apply
 ---
 
 ## 5. 補足
-- `.env` や `terraform.tfvars` などのサンプルファイルがある場合は、コピーして値を設定してください。
 - 仮想環境は毎回 `source venv/bin/activate` で有効化してください。
 - Dockerを使う場合は、各ディレクトリの `Dockerfile` を参照してください。
+- 本プロジェクトで想定してる本番環境（Cloud Run）では環境変数が自動的に読み込まれるため、`dotenv`を使用していません。ローカルでは`export`で環境変数を使用してください。
 

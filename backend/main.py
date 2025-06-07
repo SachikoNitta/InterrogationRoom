@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from firestore_client import create_case, get_case as fs_get_case, list_cases as fs_list_cases, add_chat_log
+from firestore_client import create_case, get_case as fs_get_case, list_cases as fs_list_cases, add_chat_log # .envファイルから環境変数を読み込む
 
 app = FastAPI()
 
