@@ -1,0 +1,29 @@
+from pydantic import BaseModel
+from typing import List, Optional, ClassVar
+from datetime import datetime
+
+class LogEntry(BaseModel):
+    '''
+    Caseのチャット1件を表すデータモデル。
+    '''
+    role: str  # 'user' or 'model'
+    message: str
+    createdAt: Optional[datetime] = None
+
+class Case(BaseModel):
+    '''
+    Caseのデータモデル。
+    '''
+    STATUS_IN_PROGRESS: ClassVar[str] = 'in_progress'
+    STATUS_CONFESSED: ClassVar[str] = 'confessed'
+    STATUS_FAILED: ClassVar[str] = 'failed'
+
+    caseId: str
+    userId: Optional[str] = None
+    status: Optional[str] = None,  # 'in_progress', 'confessed', 'failed'
+    createdAt: Optional[datetime] = None
+    lastUpdated: Optional[datetime] = None
+    logs: Optional[List[LogEntry]] = None
+
+class ChatRequest(BaseModel):
+    message: str

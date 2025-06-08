@@ -1,7 +1,7 @@
-gunicorn
 fastapi
-uvicorn
+google-auth
 google-cloud-firestore
 google-cloud-secret-manager
-google-auth
+gunicorn
+uvicorn
 vertexai
