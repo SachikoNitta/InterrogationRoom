@@ -22,6 +22,7 @@ steps:
       - '--image=gcr.io/$PROJECT_ID/fast-api'
       - '--region=asia-northeast1'
       - '--platform=managed'
+      - '--set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID'
 
   - name: 'gcr.io/cloud-builders/gcloud'
     args: 

@@ -54,65 +54,8 @@ resource "google_project_iam_member" "app_vertex" {
   role    = "roles/aiplatform.user"
   member  = "serviceAccount:${google_service_account.app.email}"
 }
-
-# Cloud RunにNext.jsを載せる
-resource "google_cloud_run_service" "app" {
-  name     = "interrogation-app"
-  location = var.location_id
-  template {
-    spec {
-      containers {
-        image = var.image_url
-      }
-      service_account_name = google_service_account.app.email
-    }
-  }
-  traffic {
-    percent         = 100
-    latest_revision = true
-  }
-  depends_on = [
-    google_project_service.run,
-    google_project_service.firestore,
-    google_project_service.vertex,
-    google_project_service.iam,
-    google_project_service.firebase
-  ]
-}
-
-# Cloud RunにFast APIを載せる
-resource "google_cloud_run_service" "fast" {
-  name     = "fast-api"
-  location = var.location_id
-  template {
-    spec {
-      containers {
-        image = var.fast_image_url
-      }
-      service_account_name = google_service_account.app.email
-    }
-  }
-  traffic {
-    percent         = 100
-    latest_revision = true
-  }
-  depends_on = [
-    google_project_service.run,
-    google_project_service.firestore,
-    google_project_service.vertex,
-    google_project_service.iam,
-    google_project_service.firebase
-  ]
-}
-
-# Secret Managerの設定
-resource "google_secret_manager_secret" "system_prompt" {
-  secret_id = "system_prompt"
-  replication {
-    user_managed {
-      replicas {
-        location = "asia-northeast1"
-      }
-    }
-  }
+resource "google_project_iam_member" "app_secretmanager" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.app.email}"
 }
