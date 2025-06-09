@@ -54,6 +54,7 @@ export default function Page() {
 	const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat()
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 	const [currentView, setCurrentView] = useState<ViewType>("entrance")
+	const [previousView, setPreviousView] = useState<ViewType>("entrance")
 
 	// Case ID state
 	const [caseId, setCaseId] = useState<string | null>(null)
@@ -116,6 +117,7 @@ export default function Page() {
 			}
 		}
 		if (foundCaseId) setCaseId(foundCaseId)
+		setPreviousView(currentView); // ここで直前の画面を記録
 		setCurrentView("chat")
 	}
 
@@ -133,6 +135,10 @@ export default function Page() {
 
 	const handleBackToOffice = () => {
 		setCurrentView("office")
+	}
+
+	const handleBackFromChat = () => {
+		setCurrentView(previousView);
 	}
 
 	const getStatusColor = (status: string) => {
@@ -159,7 +165,7 @@ export default function Page() {
 						onSubmit={onSubmit}
 						isLoading={isLoading}
 						messagesEndRef={messagesEndRef}
-						onBackToEntrance={handleBackToEntrance}
+						onBackToEntrance={handleBackFromChat} // ここを変更
 						caseId={caseId}
 					/>
 				)
