@@ -1,4 +1,4 @@
-# GCPインフラ構築・デプロイ手順（Cloud Build + Terraform）
+# 本番環境構築・デプロイ手順
 
 ---
 
@@ -19,15 +19,6 @@
 
 ## 手順
 
----
-
-## 各種変数の確認方法
-このアプリのセットアップに使用する変数はそれぞれ以下の方法でご確認ください。
-- [YOUR_PROJECT_ID]: コンソール上部でプロジェクトを切り替え > IAMと管理 > 設定 > プロジェクトID
-- [YOUR_PROJECT_NO]: コンソール上部でプロジェクトを切り替え > IAMと管理 > 設定 > プロジェクト番号
-
----
-
 ### gcloudコマンドの設定
 現在のプロジェクトIDを確認
 ```sh
@@ -46,115 +37,25 @@ gcloud auth application-default login
 gcloud auth list
 ```
 
----
-
-### infra/terraform.tfvarsの作成
-`infra/terraform/terraform.tfvars` に以下の内容を記載します。
-```hcl
-project_id  = "[YOUR_PROJECT_ID]"
-location_id = "asia-northeast1"
-image_url   = "gcr.io/[YOUR_PROJECT_ID]/next-app"
-fast_image_url = "gcr.io/[YOUR_PROJECT_ID]/fast-api"
-```
-
----
-
-### Cloud Buildサービスアカウントにロールを付与
+### setup.shの実行
+Google Cloud上でこのアプリを動作させるために必要な環境を構築します
 ```sh
-PROJECT_ID=[YOUR_PROJECT_ID]
-SA=[YOUR_PROJECT_NO]@cloudbuild.gserviceaccount.com
-
-for ROLE in
-  roles/run.admin
-  roles/iam.serviceAccountUser
-  roles/resourcemanager.projectIamAdmin
-  roles/storage.admin
-  roles/firebase.admin
-  roles/datastore.user
-  roles/aiplatform.user
-do
-  gcloud projects add-iam-policy-binding $PROJECT_ID \
-    --member="serviceAccount:$SA" \
-    --role="$ROLE"
-done
+cd infra
+bash setup.sh
 ```
-付与できているロールを確認
-```
-gcloud projects get-iam-policy [YOUR_PROJECT_ID] \
-  --flatten="bindings[].members" \
-  --format='table(bindings.role)' \
-  --filter="bindings.members:[YOUR_PROJECT_NO]@cloudbuild.gserviceaccount.com"
-```
-
----
 
 ###  Cloud Buildによるビルド＆デプロイ
+アプリ(/appもしくは/backend以下)をデプロイ
 ```sh
-cd infra
-gcloud builds submit --config=cloudbuild-infra.yml ..
 gcloud builds submit --config=cloudbuild-app.yml ..
-```
-
-アプリ(/appもしくは/backend以下)のみを更新したい場合
-```sh
-cd infra
-gcloud builds submit --config=cloudbuild-app.yml ..
-```
-
-インフラ（/infra以下）のみを更新したい場合
-```sh
-cd infra
-gcloud builds submit --config=cloudbuild-infra.yml ..
-```
-
-### 手動で行う場合
-#### Firestoreの有効化
-```
-gcloud services enable firestore.googleapis.com
-gcloud firestore databases create --region=asia-northeast1
-```
-#### 各種APIの有効化
-```
-gcloud services enable run.googleapis.com
-gcloud services enable firestore.googleapis.com
-gcloud services enable aiplatform.googleapis.com
-gcloud services enable iam.googleapis.com
-gcloud services enable firebase.googleapis.com
-gcloud services enable secretmanager.googleapis.com
-```
-#### サービスアカウントの作成
-```
-gcloud iam service-accounts create interrogation-app-sa \
-  --display-name="Interrogation Room App Service Account"
-```
-#### サービスアカウントにロール付与
-```
-gcloud projects add-iam-policy-binding <PROJECT_ID> \
-  --member="serviceAccount:interrogation-app-sa@<PROJECT_ID>.iam.gserviceaccount.com" \
-  --role="roles/datastore.user"
-
-gcloud projects add-iam-policy-binding <PROJECT_ID> \
-  --member="serviceAccount:interrogation-app-sa@<PROJECT_ID>.iam.gserviceaccount.com" \
-  --role="roles/run.admin"
-
-gcloud projects add-iam-policy-binding <PROJECT_ID> \
-  --member="serviceAccount:interrogation-app-sa@<PROJECT_ID>.iam.gserviceaccount.com" \
-  --role="roles/aiplatform.user"
-
-gcloud projects add-iam-policy-binding <PROJECT_ID> \
-  --member="serviceAccount:interrogation-app-sa@<PROJECT_ID>.iam.gserviceaccount.com" \
-  --role="roles/secretmanager.secretAccessor"
 ```
 
 ### アプリの公開
 - GCのCloud Runのプロダクトページに移動
 - 「サービス」からこのプロジェクトを選択
 - 「セキュリティ」タブの「認証」で「Allow unauthenticated invocations」にチェックをし、保存
-（TODO：この操作をTerraformに含む）
 
----
-
-## Secret Managerにシステムプロンプトを登録する
+### Secret Managerにシステムプロンプトを登録する
 
 GCPのSecret Managerに「system_prompt」というキーでシークレットを作成し、システムプロンプトの内容を保存してください。
 
@@ -165,6 +66,7 @@ GCPのSecret Managerに「system_prompt」というキーでシークレット�
 5. 作成を完了
 
 - このシークレットはアプリケーションから自動的に取得されます。
+
 ---
 
 ## 補足
@@ -172,3 +74,4 @@ GCPのSecret Managerに「system_prompt」というキーでシークレット�
 - どちらのCloud Buildも、GCPコンソールのCloud Build画面で進捗やログを確認できます。
 - 必要に応じて、cloudbuild-app.yml（アプリのみデプロイ）も利用可能です。
 - インフラ変更時は、事前に`terraform plan`で差分を確認することを推奨します。
+- Cloud Buildのサービスアカウントを作る理由：`gcloud builds submit`でデプロイする場合、実行アカウントにCloud Buildのデフォルトのサービスアカウントを指定することができないため。デフォルトで指定されるCompute Engineのサービスアカウントを使用することもできるが、Cloud Build関連の権限を付与することを考慮すると、ユーザー管理のサービスアカウントを作成する方がわかりやすいため。

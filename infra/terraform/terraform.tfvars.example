@@ -1,4 +1,0 @@
-project_id = "interrogation-room"
-location_id = "asia-northeast1"
-image_url = "gcr.io/interrogation-room/next-app:lastest"
-fast_image_url = "gcr.io/interrogation-room/fast-api:latest"
