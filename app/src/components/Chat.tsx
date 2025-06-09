@@ -12,6 +12,7 @@ interface ChatProps {
   isLoading: boolean;
   messagesEndRef: RefObject<HTMLDivElement>;
   onBackToEntrance: () => void;
+  caseId?: string | null; // 追加
 }
 
 export const Chat: React.FC<ChatProps> = ({ messages, input, handleInputChange, onSubmit, isLoading, messagesEndRef, onBackToEntrance }) => (

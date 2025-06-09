@@ -18,7 +18,7 @@ class Case(BaseModel):
     STATUS_CONFESSED: ClassVar[str] = 'confessed'
     STATUS_FAILED: ClassVar[str] = 'failed'
 
-    caseId: str
+    caseId: Optional[str] = None
     userId: Optional[str] = None
     status: Optional[str] = None,  # 'in_progress', 'confessed', 'failed'
     createdAt: Optional[datetime] = None

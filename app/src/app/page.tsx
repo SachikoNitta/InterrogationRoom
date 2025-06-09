@@ -4,7 +4,8 @@ import type React from "react"
 
 import { Entrance } from "@/components/Entrance";
 import { Office } from "@/components/Office";
-import { Preferences } from "@/components/Preferences";
+import { Preferences }
+ from "@/components/Preferences";
 import { Chat } from "@/components/Chat";
 import { useChat } from "ai/react";
 import { useRef, useEffect, useState } from "react";
@@ -47,10 +48,15 @@ const mockCases = [
 
 type ViewType = "entrance" | "chat" | "office" | "preferences"
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function Page() {
 	const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat()
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 	const [currentView, setCurrentView] = useState<ViewType>("entrance")
+
+	// Case ID state
+	const [caseId, setCaseId] = useState<string | null>(null)
 
 	// Preference states
 	const [notifications, setNotifications] = useState(true)
@@ -70,7 +76,30 @@ export default function Page() {
 		handleSubmit(e)
 	}
 
-	const handleStartCase = () => {
+	const handleStartCase = async () => {
+		const userId = "dummy-user-id"
+		let foundCaseId = null
+		try {
+			const res = await fetch(`${apiBaseUrl}/api/users/${userId}/cases`)
+			if (res.ok) {
+				const cases = await res.json()
+				const inProgress = cases.find((c: any) => c.status === "in_progress")
+				if (inProgress) {
+					foundCaseId = inProgress.caseId
+				}
+			}
+		} catch (e) {
+			// ignore
+		}
+		if (!foundCaseId) {
+			// 新規作成
+			const res = await fetch(`${apiBaseUrl}/api/cases`, { method: "POST" })
+			if (res.ok) {
+				const newCase = await res.json()
+				foundCaseId = newCase.id || newCase.caseId
+			}
+		}
+		if (foundCaseId) setCaseId(foundCaseId)
 		setCurrentView("chat")
 	}
 
@@ -115,6 +144,7 @@ export default function Page() {
 						isLoading={isLoading}
 						messagesEndRef={messagesEndRef}
 						onBackToEntrance={handleBackToEntrance}
+						caseId={caseId}
 					/>
 				)
 			case "office":
