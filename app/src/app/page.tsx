@@ -65,6 +65,22 @@ export default function Page() {
 	const [language, setLanguage] = useState("english")
 	const [dataRetention, setDataRetention] = useState("30")
 
+	// State to hold fetched cases
+	const [cases, setCases] = useState<any[]>([]);
+
+	// Fetch cases on component mount
+	useEffect(() => {
+		const fetchCases = async () => {
+			const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+			const res = await fetch(`${apiBaseUrl}/api/users/dummy-user-id/cases`);
+			if (res.ok) {
+				const data = await res.json();
+				setCases(data);
+			}
+		};
+		fetchCases();
+	}, []);
+
 	// Auto-scroll to bottom when new messages arrive
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -153,7 +169,7 @@ export default function Page() {
 						onBackToEntrance={handleBackToEntrance}
 						onPreferencesClick={handlePreferencesClick}
 						onStartCase={handleStartCase}
-						mockCases={mockCases}
+						cases={cases}
 						getStatusColor={getStatusColor}
 					/>
 				)

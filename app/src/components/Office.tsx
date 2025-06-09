@@ -10,11 +10,11 @@ interface OfficeProps {
   onBackToEntrance: () => void;
   onPreferencesClick: () => void;
   onStartCase: () => void;
-  mockCases: any[];
+  cases: any[];
   getStatusColor: (status: string) => string;
 }
 
-export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesClick, onStartCase, mockCases, getStatusColor }) => (
+export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesClick, onStartCase, cases, getStatusColor }) => (
   <Card className="w-full max-w-4xl shadow-lg">
     <CardHeader className="border-b">
       <div className="flex items-center justify-between">
@@ -52,7 +52,7 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
       </div>
       <Separator />
       {/* AI Tokens Section */}
-      {/* <div className="space-y-4">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Coins className="h-5 w-5 text-yellow-600" />
@@ -77,7 +77,7 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
           </div>
         </div>
       </div>
-      <Separator /> */}
+      <Separator />
       {/* Quick Actions */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Quick Actions</h3>
@@ -101,10 +101,10 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Recent Cases</h3>
-          <Badge variant="secondary">{mockCases.length} Total Cases</Badge>
+          <Badge variant="secondary">{cases.length} Total Cases</Badge>
         </div>
         <div className="space-y-3">
-          {mockCases.map((case_) => (
+          {cases.map((case_) => (
             <div
               key={case_.id}
               className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
@@ -112,17 +112,17 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h4 className="font-medium mb-1">{case_.title}</h4>
+                  <h4 className="font-medium mb-1">{case_.caseId}</h4>
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <div className="flex items-center space-x-1">
                       <Calendar className="h-3 w-3" />
-                      <span>{case_.date}</span>
+                      <span>{case_.createdAt ? case_.createdAt.split("T")[0] : ""}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Clock className="h-3 w-3" />
-                      <span>{case_.time}</span>
+                      <span>{case_.createdAt ? case_.createdAt.split("T")[1].slice(0,5) : ""}</span>
                     </div>
-                    <span>{case_.messageCount} messages</span>
+                    <span>{case_.logs.length} messages</span>
                   </div>
                 </div>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(case_.status)}`}>
