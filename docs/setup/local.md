@@ -4,7 +4,6 @@
 - Node.js（推奨バージョン: 最新LTS）
 - Python 3.x
 - Docker（必要に応じて）
-- Terraform（インフラ操作が必要な場合）
 
 ---
 
@@ -42,18 +41,6 @@ export GOOGLE_CLOUD_PROJECT=[YOUR_PROJECT_ID]
 ```sh
 uvicorn main:app --reload
 ```
-
----
-
-## 4. インフラ（必要な場合）
-```sh
-cd infra/terraform
-terraform init
-terraform apply
-```
-
-- 変数は `terraform.tfvars` で管理してください。
-- 詳細は `docs/setup/local.md` の変数管理セクション参照。
 
 ---
 
