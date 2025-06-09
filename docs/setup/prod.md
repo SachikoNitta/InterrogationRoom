@@ -107,6 +107,45 @@ cd infra
 gcloud builds submit --config=cloudbuild-infra.yml ..
 ```
 
+### 手動で行う場合
+#### Firestoreの有効化
+```
+gcloud services enable firestore.googleapis.com
+gcloud firestore databases create --region=asia-northeast1
+```
+#### 各種APIの有効化
+```
+gcloud services enable run.googleapis.com
+gcloud services enable firestore.googleapis.com
+gcloud services enable aiplatform.googleapis.com
+gcloud services enable iam.googleapis.com
+gcloud services enable firebase.googleapis.com
+gcloud services enable secretmanager.googleapis.com
+```
+#### サービスアカウントの作成
+```
+gcloud iam service-accounts create interrogation-app-sa \
+  --display-name="Interrogation Room App Service Account"
+```
+#### サービスアカウントにロール付与
+```
+gcloud projects add-iam-policy-binding <PROJECT_ID> \
+  --member="serviceAccount:interrogation-app-sa@<PROJECT_ID>.iam.gserviceaccount.com" \
+  --role="roles/datastore.user"
+
+gcloud projects add-iam-policy-binding <PROJECT_ID> \
+  --member="serviceAccount:interrogation-app-sa@<PROJECT_ID>.iam.gserviceaccount.com" \
+  --role="roles/run.admin"
+
+gcloud projects add-iam-policy-binding <PROJECT_ID> \
+  --member="serviceAccount:interrogation-app-sa@<PROJECT_ID>.iam.gserviceaccount.com" \
+  --role="roles/aiplatform.user"
+
+gcloud projects add-iam-policy-binding <PROJECT_ID> \
+  --member="serviceAccount:interrogation-app-sa@<PROJECT_ID>.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
 ### アプリの公開
 - GCのCloud Runのプロダクトページに移動
 - 「サービス」からこのプロジェクトを選択
