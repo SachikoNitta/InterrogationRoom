@@ -1,0 +1,11 @@
+# 開発・ビルド・実行に不要なファイル/ディレクトリを除外
+node_modules
+npm-debug.log
+.next
+out
+coverage
+.DS_Store
+.env
+.vscode
+.git
+*.log
