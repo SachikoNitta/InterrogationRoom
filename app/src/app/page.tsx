@@ -93,7 +93,13 @@ export default function Page() {
 		handleSubmit(e)
 	}
 
-	const handleStartCase = async () => {
+	const handleStartCase = async (caseId?: string) => {
+		setPreviousView(currentView);
+		if (caseId) {
+			setCaseId(caseId);
+			setCurrentView("chat");
+			return;
+		}
 		const userId = "dummy-user-id"
 		let foundCaseId = null
 		try {
@@ -117,7 +123,6 @@ export default function Page() {
 			}
 		}
 		if (foundCaseId) setCaseId(foundCaseId)
-		setPreviousView(currentView); // ここで直前の画面を記録
 		setCurrentView("chat")
 	}
 

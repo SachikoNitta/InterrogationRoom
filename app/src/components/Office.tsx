@@ -9,7 +9,7 @@ import React from "react";
 interface OfficeProps {
   onBackToEntrance: () => void;
   onPreferencesClick: () => void;
-  onStartCase: () => void;
+  onStartCase: (caseId?: string) => void; // caseIdを受け取れるように変更
   cases: any[];
   getStatusColor: (status: string) => string;
 }
@@ -106,9 +106,9 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
         <div className="space-y-3">
           {cases.map((case_) => (
             <div
-              key={case_.id}
+              key={case_.caseId}
               className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-              onClick={onStartCase}
+              onClick={() => onStartCase(case_.caseId)} // caseIdを渡す
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
