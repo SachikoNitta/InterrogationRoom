@@ -7,13 +7,11 @@ from services.gemini_client import *
 from typing import List, Callable
 from schemas.case import LogEntry
 
-project_id = os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("PROJECT_ID")
+project_id = os.getenv("GOOGLE_CLOUD_PROJECT", 'interrogation-room')
 if not project_id:
-    raise RuntimeError("環境変数 GOOGLE_CLOUD_PROJECT または PROJECT_ID が設定されていません。Cloud Run上では自動でセットされますが、ローカル開発時はシェルで export GOOGLE_CLOUD_PROJECT=your-project-id のように指定してください。")
+    raise RuntimeError("環境変数 GOOGLE_CLOUD_PROJECT または PROJECT_ID が設定されていません。Cloud Run上では自動でセットされますが、ローカル開発時はシェルで export GOOGLE_CLOUD_PROJECT=your-project-id で指定してください。")
 
 location = os.getenv("GOOGLE_CLOUD_LOCATION", 'asia-northeast1')
-if not location:
-    raise RuntimeError("環境変数 GOOGLE_CLOUD_LOCATION が設定されていません。デフォルトは 'asia-northeast1' です。")
 
 vertexai.init(project=project_id, location=location)    
 
@@ -68,6 +66,7 @@ def generate_chat_response(logs: List[LogEntry], on_complete: Callable[[str], No
     response = model.generate_content(stream=True, contents=contents)
     for res in response:
       if res.candidates and res.candidates[0].text:
+        buffer += res.candidates[0].text.strip()
         yield res.candidates[0].text.strip()
     
     on_complete(buffer)

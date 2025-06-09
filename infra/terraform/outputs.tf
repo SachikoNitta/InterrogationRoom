@@ -13,11 +13,6 @@ output "firestore_database_location" {
   description = "FirestoreデータベースのロケーションID"
 }
 
-output "cloud_run_url" {
-  value       = google_cloud_run_service.app.status[0].url
-  description = "デプロイしたCloud RunサービスのURL"
-}
-
 output "service_account_email" {
   value       = google_service_account.app.email
   description = "アプリ用サービスアカウントのメールアドレス"

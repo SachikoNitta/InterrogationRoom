@@ -23,6 +23,7 @@ steps:
       - '--region=asia-northeast1'
       - '--platform=managed'
       - '--set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID'
+      - '--service-account=interrogation-app-sa@${PROJECT_ID}.iam.gserviceaccount.com'
 
   - name: 'gcr.io/cloud-builders/gcloud'
     args: 
