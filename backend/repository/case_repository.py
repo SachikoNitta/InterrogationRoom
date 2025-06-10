@@ -13,6 +13,7 @@ def create(case=Case) -> Case:
     doc_ref = db.collection(COLLECTION).document() 
     doc_ref.set(case.dict())
     case.caseId = doc_ref.id  # ドキュメントIDをcaseIdに設定
+    doc_ref.update({"caseId": case.caseId})  # DBにcaseIdを保存
     return case
 
 def get_all() -> List[Case]:
