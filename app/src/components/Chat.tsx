@@ -78,13 +78,14 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId 
       }
     }
 
-    // ユーザーのメッセージを追加
-    setMessages((prev) => [...prev, { role: "user", content: input }]);
+    // ユーザーのメッセージとAI返答用の空要素を同時に追加
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: input },
+      { role: "model", content: "" }
+    ]);
     setInput("");
     setIsLoading(true);
-
-    // ユーザー送信時
-    setMessages(prev => [...prev, { role: "model", content: "" }]);
 
     // APIにメッセージを送信.
     const res = await fetch(`${apiBaseUrl}/api/cases/${usedCaseId}/chat`, {
@@ -113,10 +114,16 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId 
         // 1文字ずつ末尾に追加.
         setMessages(prev => {
           const updated = [...prev];
-          updated[updated.length - 1] = {
-            ...updated[updated.length - 1],
-            content: updated[updated.length - 1].content + char
-          };
+          if (updated.length === 0) {
+            updated.push({ role: "user", content: input });
+            updated.push({ role: "model", content: char });
+          } else {
+            // 最後の要素に文字を追加
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+              content: updated[updated.length - 1].content + char
+            };
+          }
           return updated;
         });
       }
