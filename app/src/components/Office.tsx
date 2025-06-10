@@ -9,12 +9,12 @@ import React from "react";
 interface OfficeProps {
   onBackToEntrance: () => void;
   onPreferencesClick: () => void;
-  onStartCase: (caseId?: string) => void; // caseIdを受け取れるように変更
+  onClickCase: (caseId?: string) => void; // caseIdを受け取れるように変更
   cases: any[];
   getStatusColor: (status: string) => string;
 }
 
-export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesClick, onStartCase, cases, getStatusColor }) => (
+export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesClick, onClickCase, cases, getStatusColor }) => (
   <Card className="w-full max-w-4xl shadow-lg">
     <CardHeader className="border-b">
       <div className="flex items-center justify-between">
@@ -108,7 +108,7 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
             <div
               key={case_.caseId}
               className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-              onClick={() => onStartCase(case_.caseId)} // caseIdを渡す
+              onClick={() => onClickCase(case_.caseId)} // caseIdを渡す
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">

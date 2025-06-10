@@ -33,8 +33,9 @@ export default function Page() {
 	// State to hold fetched cases
 	const [cases, setCases] = useState<any[]>([]);
 
-	// Fetch cases on component mount
+	// Officeを表示するたびにケース一覧を取得
 	useEffect(() => {
+		if (currentView !== "office") return;
 		const fetchCases = async () => {
 			const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 			const res = await fetch(`${apiBaseUrl}/api/users/dummy-user-id/cases`);
@@ -44,7 +45,7 @@ export default function Page() {
 			}
 		};
 		fetchCases();
-	}, []);
+	}, [currentView]);
 
 	// Auto-scroll to bottom when new messages arrive
 	useEffect(() => {
@@ -67,6 +68,15 @@ export default function Page() {
 			setCaseId(newCase.caseId)
 		}
 		setCurrentView("chat")
+	}
+
+	// OfficeのCaseをクリックしたときの処理
+	const handleClickCase = (caseId?: string) => {
+		if (caseId) {
+			setPreviousView(currentView);
+			setCaseId(caseId)
+			setCurrentView("chat")
+		}
 	}
 
 	const handleGoToOffice = () => {
@@ -122,7 +132,7 @@ export default function Page() {
 					<Office
 						onBackToEntrance={handleBackToEntrance}
 						onPreferencesClick={handlePreferencesClick}
-						onStartCase={handleStartCase}
+						onClickCase={handleClickCase}
 						cases={cases}
 						getStatusColor={getStatusColor}
 					/>
