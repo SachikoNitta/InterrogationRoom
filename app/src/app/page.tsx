@@ -57,36 +57,15 @@ export default function Page() {
 		handleSubmit(e)
 	}
 
-	const handleStartCase = async (caseId?: string) => {
+	// Start a Caseをクリックしたときの処理
+	const handleStartCase = async () => {
 		setPreviousView(currentView);
-		if (caseId) {
-			setCaseId(caseId);
-			setCurrentView("chat");
-			return;
+		const res = await fetch(`${apiBaseUrl}/api/cases`, { method: "POST" })
+		if (res.ok) {
+			const newCase = await res.json()
+			console.log("New case created:", newCase)
+			setCaseId(newCase.caseId)
 		}
-		const userId = "dummy-user-id"
-		let foundCaseId = null
-		try {
-			const res = await fetch(`${apiBaseUrl}/api/users/${userId}/cases`)
-			if (res.ok) {
-				const cases = await res.json()
-				const inProgress = cases.find((c: any) => c.status === "in_progress")
-				if (inProgress) {
-					foundCaseId = inProgress.caseId
-				}
-			}
-		} catch (e) {
-			// ignore
-		}
-		if (!foundCaseId) {
-			// 新規作成
-			const res = await fetch(`${apiBaseUrl}/api/cases`, { method: "POST" })
-			if (res.ok) {
-				const newCase = await res.json()
-				foundCaseId = newCase.id || newCase.caseId
-			}
-		}
-		if (foundCaseId) setCaseId(foundCaseId)
 		setCurrentView("chat")
 	}
 

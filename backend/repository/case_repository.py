@@ -12,6 +12,7 @@ def create(case=Case) -> Case:
     """新しいケースを作成し、Firestoreに保存する"""
     doc_ref = db.collection(COLLECTION).document() 
     doc_ref.set(case.dict())
+    case.caseId = doc_ref.id  # ドキュメントIDをcaseIdに設定
     return case
 
 def get_all() -> List[Case]:
