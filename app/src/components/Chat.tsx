@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Send, ArrowLeft } from "lucide-react";
+import { Send, ArrowLeft, Trash2 } from "lucide-react";
 import React, { RefObject, useEffect, useState, useRef } from "react";
 
 interface ChatProps {
@@ -112,6 +112,19 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId }) => {
     setIsLoading(false);
   };
 
+  // ケース削除処理
+  const handleDeleteCase = async () => {
+    if (!caseId) return;
+    if (!window.confirm("本当にこのケースを削除しますか？")) return;
+    const res = await fetch(`${apiBaseUrl}/api/cases/${caseId}`, { method: "DELETE" });
+    if (res.ok) {
+      alert("ケースを削除しました");
+      onBackToEntrance();
+    } else {
+      alert("削除に失敗しました");
+    }
+  };
+
   return (
     <Card className="w-full max-w-4xl shadow-lg">
       <CardHeader className="border-b">
@@ -125,6 +138,9 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId }) => {
               <span className="ml-4 text-sm text-gray-500">Case: {caseData.caseId} / Status: {caseData.status}</span>
             )}
           </div>
+          <Button variant="ghost" size="icon" onClick={handleDeleteCase} title="Delete Case">
+            <Trash2 className="h-5 w-5 text-red-500" />
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="h-[60vh] overflow-y-auto p-4">

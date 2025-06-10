@@ -71,3 +71,10 @@ def chat(caseId: str, req: ChatRequest):
 
     # ストリーム形式でレスポンスを返す.
     return StreamingResponse(stream, media_type="text/plain")
+
+@router.delete("/api/cases/{caseId}")
+def delete_case(caseId: str):
+    '''指定されたcaseIdのケースを削除するAPIエンドポイント。'''
+    delete(caseId)
+    return {"detail": f"Case {caseId} deleted"}
+
