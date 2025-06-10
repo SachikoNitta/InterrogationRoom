@@ -94,17 +94,17 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId }) => {
       const chunk = decoder.decode(value);
 
       for (const char of chunk) {
-      // 適宜調整可能な遅延.
-      await new Promise(resolve => setTimeout(resolve, 50));
-      // 1文字ずつ末尾に追加.
-      setMessages(prev => {
-        const updated = [...prev];
-        updated[updated.length - 1] = {
-        ...updated[updated.length - 1],
-        content: updated[updated.length - 1].content + char
-        };
-        return updated;
-      });
+        // 適宜調整可能な遅延.
+        await new Promise(resolve => setTimeout(resolve, 50));
+        // 1文字ずつ末尾に追加.
+        setMessages(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            ...updated[updated.length - 1],
+            content: updated[updated.length - 1].content + char
+          };
+          return updated;
+        });
       }
     }
 
@@ -146,23 +146,26 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId }) => {
       <CardContent className="h-[60vh] overflow-y-auto p-4">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-400">
-        <p>Send a message to start chatting with the AI</p>
+            <p>Send a message to start chatting with the AI</p>
           </div>
         ) : (
           <>
-        {messages.map((m, i) => (
-          <div key={i} className={`mb-4 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div
-          className={`max-w-[80%] p-3 rounded-lg ${m.role === "user"
-            ? "bg-blue-500 text-white rounded-br-none"
-            : "bg-gray-200 text-gray-800 rounded-bl-none"
-            }`}
-            >
-          {m.content}
-            </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
+            {messages.map((m, i) => (
+              <div key={i} className={`mb-4 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={`max-w-[80%] p-3 rounded-lg ${m.role === "user"
+                    ? "bg-blue-500 text-white rounded-br-none"
+                    : "bg-gray-200 text-gray-800 rounded-bl-none"
+                    }`}
+                  dangerouslySetInnerHTML={{
+                    __html: m.content
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") // **太字** → <strong>太字</strong>
+                      .replace(/\n/g, "<br />") // 改行も同時に変換
+                  }}
+                />
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
           </>
         )}
       </CardContent>
