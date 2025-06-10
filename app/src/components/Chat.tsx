@@ -6,10 +6,11 @@ import React, { useEffect, useState, useRef } from "react";
 
 interface ChatProps {
   onBackToEntrance: () => void;
-  caseId?: string | null; // 追加
+  caseId?: string | null;
+  setCaseId: (caseId: string | null) => void;
 }
 
-export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId }) => {
+export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId }) => {
   // DBから取得したCaseデータ.
   const [caseData, setCaseData] = useState<any>(null);
   // 画面上に表示される全てのメッセージ.
@@ -60,20 +61,33 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId }) => {
   // メッセージの送信時の処理.
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input.trim() || !caseId) return;
+    if (!input.trim()) return;
 
-    // ユーザーのメッセージを追加.
+    let usedCaseId = caseId;
+    // caseIdがなければ新規作成
+    if (!usedCaseId) {
+      const res = await fetch(`${apiBaseUrl}/api/cases`, { method: "POST" });
+      if (res.ok) {
+        const newCase = await res.json();
+        usedCaseId = newCase.caseId || newCase.id;
+        setCaseId(usedCaseId || null);
+      } else {
+        alert("ケースの作成に失敗しました");
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // ユーザーのメッセージを追加
     setMessages((prev) => [...prev, { role: "user", content: input }]);
     setInput("");
-
-    // ユーザーの入力を不可にする.
     setIsLoading(true);
 
     // ユーザー送信時
     setMessages(prev => [...prev, { role: "model", content: "" }]);
 
     // APIにメッセージを送信.
-    const res = await fetch(`${apiBaseUrl}/api/cases/${caseId}/chat`, {
+    const res = await fetch(`${apiBaseUrl}/api/cases/${usedCaseId}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: input }),

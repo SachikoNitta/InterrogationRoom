@@ -4,18 +4,13 @@ import type React from "react"
 
 import { Entrance } from "@/components/Entrance";
 import { Office } from "@/components/Office";
-import { Preferences }
-	from "@/components/Preferences";
+import { Preferences } from "@/components/Preferences";
 import { Chat } from "@/components/Chat";
-import { useChat } from "ai/react";
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 type ViewType = "entrance" | "chat" | "office" | "preferences"
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-
 export default function Page() {
-	const messagesEndRef = useRef<HTMLDivElement>(null)
 	const [currentView, setCurrentView] = useState<ViewType>("entrance")
 	const [previousView, setPreviousView] = useState<ViewType>("entrance")
 
@@ -49,13 +44,8 @@ export default function Page() {
 	// Start a Caseをクリックしたときの処理
 	const handleStartCase = async () => {
 		setPreviousView(currentView);
-		const res = await fetch(`${apiBaseUrl}/api/cases`, { method: "POST" })
-		if (res.ok) {
-			const newCase = await res.json()
-			console.log("New case created:", newCase)
-			setCaseId(newCase.caseId)
-		}
-		setCurrentView("chat")
+		setCaseId(null); // caseIdをリセット
+		setCurrentView("chat");
 	}
 
 	// OfficeのCaseをクリックしたときの処理
@@ -107,6 +97,7 @@ export default function Page() {
 					<Chat
 						onBackToEntrance={handleBackFromChat}
 						caseId={caseId}
+						setCaseId={setCaseId}
 					/>
 				)
 			case "office":
