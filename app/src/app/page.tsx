@@ -10,42 +10,6 @@ import { Chat } from "@/components/Chat";
 import { useChat } from "ai/react";
 import { useRef, useEffect, useState } from "react";
 
-// Mock data for past cases
-const mockCases = [
-	{
-		id: 1,
-		title: "Case #2024-001: Financial Fraud Investigation",
-		date: "2024-01-15",
-		time: "14:30",
-		status: "Completed",
-		messageCount: 45,
-	},
-	{
-		id: 2,
-		title: "Case #2024-002: Identity Theft Analysis",
-		date: "2024-01-12",
-		time: "09:15",
-		status: "In Progress",
-		messageCount: 23,
-	},
-	{
-		id: 3,
-		title: "Case #2024-003: Corporate Espionage Review",
-		date: "2024-01-10",
-		time: "16:45",
-		status: "Completed",
-		messageCount: 67,
-	},
-	{
-		id: 4,
-		title: "Case #2024-004: Cybersecurity Breach",
-		date: "2024-01-08",
-		time: "11:20",
-		status: "Archived",
-		messageCount: 89,
-	},
-]
-
 type ViewType = "entrance" | "chat" | "office" | "preferences"
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
