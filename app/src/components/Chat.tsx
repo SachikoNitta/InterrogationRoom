@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Send, ArrowLeft, Trash2 } from "lucide-react";
-import React, { RefObject, useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 interface ChatProps {
   onBackToEntrance: () => void;
