@@ -6,8 +6,8 @@ class LogEntry(BaseModel):
     '''
     Caseのチャット1件を表すデータモデル。
     '''
-    role: str  # 'user' or 'model'
-    message: str
+    role: Optional[str] = None  # 'user', 'model'
+    message: Optional[str] = None
     createdAt: Optional[datetime] = None
 
 class Case(BaseModel):

@@ -52,7 +52,7 @@ def chat(caseId: str, req: ChatRequest):
     '''指定されたcaseIdのケースに対してチャットを行うAPIエンドポイント。'''
 
     # ユーザーのメッセージをDBに保存.
-    log = LogEntry(role="user", message=req.message, timestamp=datetime.now())
+    log = LogEntry(role="user", message=req.message, createdAt=datetime.now())
     append_log(caseId, log)
 
     # 同じCaseの既存のログを全て取得.
@@ -63,7 +63,7 @@ def chat(caseId: str, req: ChatRequest):
 
     # AIの回答をDBに保存.
     def save_reply(full_text: str):
-        log = LogEntry(role="model", message=full_text, timestamp=datetime.now())
+        log = LogEntry(role="model", message=full_text, createdAt=datetime.now())
         append_log(caseId, log)
 
     # Geminiにリクエストを送信.

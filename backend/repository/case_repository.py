@@ -43,11 +43,12 @@ def delete(case_id: str):
     db.collection(COLLECTION).document(case_id).delete()
 
 def append_log(case_id: str, log: LogEntry):
+    print(f"Appending log to case {case_id}: {log}")
     """指定されたcaseIdのケースにチャットログを追加する"""
     log_entry = {
         "role": log.role,
         "message": log.message,
-        "timestamp": log.createdAt.isoformat() if log.createdAt else None
+        "createdAt": log.createdAt.isoformat() if log.createdAt else None
     }
     db.collection("cases").document(case_id).update({
         "logs": firestore.ArrayUnion([log_entry])
