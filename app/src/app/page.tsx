@@ -5,7 +5,7 @@ import type React from "react"
 import { Entrance } from "@/components/Entrance";
 import { Office } from "@/components/Office";
 import { Preferences }
- from "@/components/Preferences";
+	from "@/components/Preferences";
 import { Chat } from "@/components/Chat";
 import { useChat } from "ai/react";
 import { useRef, useEffect, useState } from "react";
@@ -15,7 +15,6 @@ type ViewType = "entrance" | "chat" | "office" | "preferences"
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function Page() {
-	const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat()
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 	const [currentView, setCurrentView] = useState<ViewType>("entrance")
 	const [previousView, setPreviousView] = useState<ViewType>("entrance")
@@ -46,17 +45,6 @@ export default function Page() {
 		};
 		fetchCases();
 	}, [currentView]);
-
-	// Auto-scroll to bottom when new messages arrive
-	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-	}, [messages])
-
-	const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault()
-		if (input.trim() === "") return
-		handleSubmit(e)
-	}
 
 	// Start a Caseをクリックしたときの処理
 	const handleStartCase = async () => {
@@ -117,13 +105,7 @@ export default function Page() {
 			case "chat":
 				return (
 					<Chat
-						messages={messages}
-						input={input}
-						handleInputChange={handleInputChange}
-						onSubmit={onSubmit}
-						isLoading={isLoading}
-						messagesEndRef={messagesEndRef}
-						onBackToEntrance={handleBackFromChat} // ここを変更
+						onBackToEntrance={handleBackFromChat}
 						caseId={caseId}
 					/>
 				)
