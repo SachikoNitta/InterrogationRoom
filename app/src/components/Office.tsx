@@ -5,6 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Mail, Phone, Coins, Settings, User, FileText, Calendar, Clock } from "lucide-react";
 import React from "react";
+import { auth } from "@/lib/auth";
+import { signOut } from "firebase/auth";
 
 interface OfficeProps {
   onBackToEntrance: () => void;
@@ -21,6 +23,11 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
     return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
   });
 
+  const handleSignOut = async () => {
+    await signOut(auth);
+    onBackToEntrance();
+  };
+
   return (
     <Card className="w-full max-w-4xl shadow-lg">
       <CardHeader className="border-b">
@@ -31,6 +38,9 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
             </Button>
             <CardTitle>Office</CardTitle>
           </div>
+          <Button variant="outline" size="sm" onClick={handleSignOut}>
+            Sign Out
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="p-6 space-y-6">

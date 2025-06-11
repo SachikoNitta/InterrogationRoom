@@ -60,6 +60,23 @@ gcloud builds submit --config=cloudbuild-backend.yml ..
 - 「サービス」からこのプロジェクトを選択
 - 「セキュリティ」タブの「認証」で「Allow unauthenticated invocations」にチェックをし、保存
 
+### Firebase Authenticationの設定
+- Firebaseでプロジェクトを選択
+- サイドバーの歯車マーク > Project Settings
+- Your Appsでアプリを新規作成
+- firebaseConfigの値を`app/.env`にセット
+```
+FIREBASE_API_KEY=AIzaSyD-YGsKLwGLLOCRLZCRc1tO1jlVmeY9TQc
+FIREBASE_AUTH_DOMAIN=interrogation-room.firebaseapp.com
+FIREBASE_PROJECT_ID=interrogation-room
+FIREBASE_STORAGE_BUCKET=interrogation-room.firebasestorage.app
+FIREBASE_MESSAGING_SENDER_ID=488803469381
+FIREBASE_APP_ID=1:488803469381:web:e7687b4c35db39032c3b2c
+FIREBASE_MEASUREMENT_ID=G-N8RVNDGL6G
+```
+- Authentication > Sign-in method
+- Sign-in providersでGoogleをプロバイダとして有効化
+
 ### Secret Managerにシステムプロンプトを登録する
 
 GCのSecret Managerに「system_prompt」というキーでシークレットを作成し、システムプロンプトの内容を保存してください。

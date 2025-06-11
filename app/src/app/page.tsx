@@ -1,6 +1,8 @@
 "use client"
 
 import type React from "react"
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/lib/auth";
 
 import { Entrance } from "@/components/Entrance";
 import { Office } from "@/components/Office";
@@ -11,6 +13,7 @@ import { useEffect, useState } from "react";
 type ViewType = "entrance" | "chat" | "office" | "preferences"
 
 export default function Page() {
+	const [user, loading] = useAuthState(auth);
 	const [currentView, setCurrentView] = useState<ViewType>("entrance")
 	const [previousView, setPreviousView] = useState<ViewType>("entrance")
 
@@ -91,6 +94,10 @@ export default function Page() {
 	}
 
 	const renderCurrentView = () => {
+		if (!user && !loading) {
+			// 未ログイン時は必ずEntranceのみ表示
+			return <Entrance onStartCase={handleStartCase} onGoToOffice={handleGoToOffice} />;
+		}
 		switch (currentView) {
 			case "chat":
 				return (
