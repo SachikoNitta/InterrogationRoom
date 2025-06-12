@@ -9,15 +9,6 @@
 
 ---
 
-## 構成概要
-- インフラ初期構築: infra/setup.sh
-- アプリビルド・デプロイ: infra/cloudbuild.yml（Cloud Build）
-- Dockerイメージ管理: Google Container Registry (GCR)
-- Cloud Run: Next.jsアプリとFast APIアプリをデプロイ
-- プロンプト管理: Secret Manager
-
----
-
 ## 手順
 
 ### gcloudコマンドの設定
@@ -60,32 +51,26 @@ gcloud builds submit --config=cloudbuild-backend.yml ..
 - 「サービス」からこのプロジェクトを選択
 - 「セキュリティ」タブの「認証」で「Allow unauthenticated invocations」にチェックをし、保存
 
-### Firebase Authenticationの設定
+### Firebase AuthenticationでGoogleのSSOを有効化
 - Firebaseでプロジェクトを選択
-- サイドバーの歯車マーク > Project Settings
+- サイドバーの歯車マーク > Project settings
 - Your Appsでアプリを新規作成
-- firebaseConfigの値を`app/.env`にセット
-```
-FIREBASE_API_KEY=AIzaSyD-YGsKLwGLLOCRLZCRc1tO1jlVmeY9TQc
-FIREBASE_AUTH_DOMAIN=interrogation-room.firebaseapp.com
-FIREBASE_PROJECT_ID=interrogation-room
-FIREBASE_STORAGE_BUCKET=interrogation-room.firebasestorage.app
-FIREBASE_MESSAGING_SENDER_ID=488803469381
-FIREBASE_APP_ID=1:488803469381:web:e7687b4c35db39032c3b2c
-FIREBASE_MEASUREMENT_ID=G-N8RVNDGL6G
-```
-- Authentication > Sign-in method
+- サイドバーのAuthentication > Sign-in method
 - Sign-in providersでGoogleをプロバイダとして有効化
 
 ### Secret Managerにシステムプロンプトを登録する
+バックエンドで使用する変数をSecret Managerにします。
 
-GCのSecret Managerに「system_prompt」というキーでシークレットを作成し、システムプロンプトの内容を保存してください。
-
-1. GCコンソールで「Secret Manager」に移動
-2. 「シークレットを作成」をクリック
-3. 名前に `system_prompt` を入力
-4. シークレットの値にシステムプロンプトの内容（例: あなたは事件の容疑者です。...）を入力
-5. 作成を完了
-
-- このシークレットはアプリケーションから自動的に取得されます。
-
+#### Firebase Authの秘密鍵
+- サイドバーの歯車マーク > Project settings > Service accounts
+- 「Generate new private key」をクリック
+- 秘密鍵をダウンロード
+- 秘密鍵をSecret Managerに保存
+```sh
+gcloud secrets create firebase-service-account --data-file=/path/to/serviceAccountKey.json
+```
+#### システムプロンプト
+- AIにチャットのシステムプロンプトとして送る内容をテキストファイルに保存
+```sh
+gcloud secrets create firebase-service-account --data-file=/path/to/prompt.txt
+```

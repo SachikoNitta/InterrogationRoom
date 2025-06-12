@@ -53,15 +53,3 @@ def append_log(case_id: str, log: LogEntry):
     db.collection("cases").document(case_id).update({
         "logs": firestore.ArrayUnion([log_entry])
     })
-
-    # --- ユーザー関連 ---
-    # def get_user(user_id: str) -> Optional[Dict[str, Any]]:
-    #     """指定されたユーザーIDのユーザーデータを取得する"""
-    #     doc = db.collection("users").document(user_id).get()
-    #     if doc.exists:
-    #         return doc.to_dict()
-    #     return None
-
-    # def create_or_update_user(user_id: str, user: Dict[str, Any]):
-    #     """指定されたユーザーIDのユーザーデータを作成または更新する"""
-    #     db.collection("users").document(user_id).set(user, merge=True)

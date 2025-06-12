@@ -20,6 +20,7 @@
 - Firebase Authentication（SSO 認証）
 - Firestore（ゲーム状態とログの保存）
 - Vertex AI（容疑者応答生成）
+- Secret Manager（バックエンドのAPIキーやプロンプトを管理）
 
 ---
 

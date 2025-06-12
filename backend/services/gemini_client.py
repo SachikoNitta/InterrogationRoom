@@ -2,27 +2,18 @@
 import os
 import vertexai
 from vertexai.generative_models import GenerativeModel, Content, Part
-from google.cloud import secretmanager
-from services.gemini_client import *
 from typing import List, Callable
 from schemas.case import LogEntry
+from services.secret_manager import getsecret
 
 project_id = os.getenv("GOOGLE_CLOUD_PROJECT", 'interrogation-room')
-if not project_id:
-    raise RuntimeError("環境変数 GOOGLE_CLOUD_PROJECT または PROJECT_ID が設定されていません。Cloud Run上では自動でセットされますが、ローカル開発時はシェルで export GOOGLE_CLOUD_PROJECT=your-project-id で指定してください。")
-
 location = os.getenv("GOOGLE_CLOUD_LOCATION", 'asia-northeast1')
+PROMPT_SECRET_NAME = 'system_prompt'
 
 vertexai.init(project=project_id, location=location)    
 
-def get_system_prompt() -> str:
-    client = secretmanager.SecretManagerServiceClient()
-    secret_name = f"projects/{project_id}/secrets/system_prompt/versions/latest"
-    response = client.access_secret_version(request={"name": secret_name})
-    return response.payload.data.decode("UTF-8")
-
 def get_model() -> GenerativeModel:
-    system_instruction = get_system_prompt()
+    system_instruction = getsecret("GEMINI_SYSTEM_INSTRUCTION")
     return GenerativeModel("gemini-1.5-flash-002", system_instruction=system_instruction)
 
 def build_contents_from_logs(logs = [LogEntry]) -> List[Content]:
