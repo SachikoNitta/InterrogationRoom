@@ -2,7 +2,6 @@ import React, { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { MessageSquare, Building2 } from "lucide-react";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, signInWithGoogle } from "@/lib/auth";
 
 interface EntranceProps {
@@ -11,8 +10,6 @@ interface EntranceProps {
 }
 
 export const Entrance: React.FC<EntranceProps> = ({ onStartCase, onGoToOffice }) => {
-  const [user, loading] = useAuthState(auth);
-  const [loginApiSuccess, setLoginApiSuccess] = useState(false);
 
   const handleGoogleLogin = useCallback(async () => {
     try {
@@ -28,15 +25,11 @@ export const Entrance: React.FC<EntranceProps> = ({ onStartCase, onGoToOffice })
             "Content-Type": "application/json"
           },
         });
-        if (res.ok) {
-          setLoginApiSuccess(true);
-        } else {
-          setLoginApiSuccess(false);
-          alert("サーバーログインに失敗しました");
+        if (!res.ok) {
+          throw new Error("API login failed");
         }
       }
     } catch (e) {
-      setLoginApiSuccess(false);
       alert("ログインに失敗しました");
     }
   }, []);
@@ -48,7 +41,7 @@ export const Entrance: React.FC<EntranceProps> = ({ onStartCase, onGoToOffice })
       </CardHeader>
       <CardContent className="px-12 pb-12">
         <div className="flex flex-col space-y-4 max-w-md mx-auto">
-          {loading ? null : user && loginApiSuccess ? (
+          { auth.currentUser ? (
             <>
               <Button size="lg" className="h-14 text-lg" onClick={onStartCase}>
                 <MessageSquare className="mr-3 h-5 w-5" />

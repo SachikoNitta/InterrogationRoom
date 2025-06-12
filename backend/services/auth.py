@@ -19,19 +19,14 @@ def extract_token_from_request(request: Request) -> str:
 
 def verify_id_token(request: Request) -> dict:
     """Firebase IDトークンを検証する関数"""
+    # Bearerトークンをリクエストから抽出.
     token = extract_token_from_request(request)
     if not token:
         raise HTTPException(status_code=401, detail="Token not found")
+
+    # Firebase Admin SDKで検証.
     try:
-        # 🔥 Firebase Admin SDKで検証！
-        print(f"Verifying token: {token}")
-        decoded_token = auth.verify_id_token(token)
-        print(f"Decoded token: {decoded_token}")    
-        return decoded_token  # uid, email などが含まれてるよ
+        decoded_token = auth.verify_id_token(token) 
+        return decoded_token
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid token")
-
-def get_current_user_id(token: str = Depends(verify_id_token)) -> str:
-    """Firebase IDトークンを検証し、ユーザーIDを取得する関数"""
-    decoded = auth.verify_id_token(token)
-    return decoded["uid"]

@@ -1,8 +1,7 @@
-from fastapi import APIRouter
-from schemas.user import User, LoginRequest
+from fastapi import APIRouter, Request, HTTPException
+from schemas.user import User
 from datetime import datetime
 from services.auth import verify_id_token
-from fastapi import Request, HTTPException
 from repository.user_repository import save_user
 
 router = APIRouter()
@@ -10,11 +9,7 @@ router = APIRouter()
 @router.post("/api/auth/login")
 def login(request: Request):
     # IDトークンを検証
-    try:
-        decoded = verify_id_token(request)
-        print(f"Decoded ID token: {decoded}")
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid ID token")
+    decoded = verify_id_token(request)
     user_id = decoded["uid"]
     user_obj = User(
         userId=user_id,

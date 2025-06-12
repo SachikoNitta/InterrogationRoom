@@ -4,7 +4,6 @@ from schemas.user import User
 
 # Firestoreクライアントの初期化
 db = firestore.Client()
-COLLECTION = "users"
 
 def save_user(user: User):
     user_id = user.userId

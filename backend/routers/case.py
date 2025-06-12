@@ -4,16 +4,16 @@ from typing import List
 from datetime import datetime
 from schemas.case import LogEntry, Case, ChatRequest
 from repository.case_repository import *
-from services.auth import get_current_user_id
+from services.auth import verify_id_token
 from services.gemini_client import generate_chat_response
 
 router = APIRouter()
 
 @router.post("/api/cases")
-def create_case():
+def create_case(token: Dict = Depends(verify_id_token)):
     '''新しいCaseを作成するAPIエンドポイント。'''
     case = Case(
-      userId='dummy-user-id',
+      userId=token["user_id"],
       status=Case.STATUS_IN_PROGRESS,
       createdAt=datetime.now(),
       lastUpdated=datetime.now(),
@@ -22,6 +22,11 @@ def create_case():
     return create(case)
 
 @router.get("/api/cases", response_model=List[Case])
+def get_my_cases(token: Dict = Depends(verify_id_token)):
+    '''現在のユーザーのケース一覧を取得するAPIエンドポイント。'''
+    return get_by_user_id(token["user_id"])
+
+@router.get("/api/cases/all", response_model=List[Case])
 def get_cases():
     '''全ケース一覧を取得するAPIエンドポイント。'''
     return get_all()
@@ -34,18 +39,7 @@ def get_case(caseId: str):
         return JSONResponse(status_code=404, content={"detail": "Case not found"})
     return cases
 
-@router.get("/api/users/{userId}/cases", response_model=List[Case])
-def get_cases_by_user_id(userId: str):
-    '''ユーザーごとのケース一覧を取得するAPIエンドポイント。'''
-    cases = get_by_user_id(userId)
-    if not cases:
-        return JSONResponse(status_code=404, content={"detail": "No cases found for this user"})
-    return cases
 
-@router.get("/api/me/cases", response_model=List[Case])
-def get_my_cases(current_user_id: str = Depends(get_current_user_id)):
-    '''現在のユーザーのケース一覧を取得するAPIエンドポイント。'''
-    return get_cases_by_user_id(current_user_id)
 
 @router.post("/api/cases/{caseId}/chat")
 def chat(caseId: str, req: ChatRequest):

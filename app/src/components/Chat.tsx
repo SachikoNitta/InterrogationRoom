@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Input } from "@/components/ui/input";
 import { Send, ArrowLeft, Trash2 } from "lucide-react";
 import React, { useEffect, useState, useRef } from "react";
+import { auth } from "@/lib/auth";
 
 interface ChatProps {
   onBackToEntrance: () => void;
@@ -66,7 +67,15 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId 
     let usedCaseId = caseId;
     // caseIdがなければ新規作成
     if (!usedCaseId) {
-      const res = await fetch(`${apiBaseUrl}/api/cases`, { method: "POST" });
+      const idToken = await auth.currentUser?.getIdToken();
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const res = await fetch(`${apiBaseUrl}/api/cases`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${idToken}`,
+          "Content-Type": "application/json"
+        }
+      });
       if (res.ok) {
         const newCase = await res.json();
         usedCaseId = newCase.caseId || newCase.id;

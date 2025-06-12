@@ -34,8 +34,15 @@ export default function Page() {
 	useEffect(() => {
 		if (currentView !== "office") return;
 		const fetchCases = async () => {
+			const idToken = await auth.currentUser?.getIdToken();
 			const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-			const res = await fetch(`${apiBaseUrl}/api/users/dummy-user-id/cases`);
+			const res = await fetch(`${apiBaseUrl}/api/cases`, {
+				method: "GET",
+				headers: {
+					"Authorization": `Bearer ${idToken}`,
+					"Content-Type": "application/json"
+				}
+			});
 			if (res.ok) {
 				const data = await res.json();
 				setCases(data);
