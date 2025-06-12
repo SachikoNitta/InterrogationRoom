@@ -2,9 +2,18 @@ from fastapi import APIRouter, Request, HTTPException
 from schemas.user import User
 from datetime import datetime
 from services.auth import verify_id_token
-from repository.user_repository import save_user
+from repository.user_repository import save_user, get_user
 
 router = APIRouter()
+
+@router.get("/api/auth/me", response_model=User)
+def get_me(request: Request):
+    """ ユーザー情報を取得するエンドポイント """
+    decoded = verify_id_token(request)
+    user = get_user(decoded["uid"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 @router.post("/api/auth/login")
 def login(request: Request):
@@ -20,17 +29,8 @@ def login(request: Request):
         lastLoginAt=datetime.now(),
         preferences={}
     )
-    save_user(user_obj)
+    user = save_user(user_obj)
+    if not user:
+        raise HTTPException(status_code=500, detail="Failed to save user data")
     return {"userId": user_id}
 
-@router.get("/api/auth/me", response_model=User)
-def get_me():
-    return User(
-        userId="dummy-user-id",
-        displayName="ダミーユーザー",
-        email="dummy@example.com",
-        provider="google",
-        createdAt=datetime.now(),
-        lastLoginAt=datetime.now(),
-        preferences={}
-    )

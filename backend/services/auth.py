@@ -1,4 +1,4 @@
-from fastapi import Request, HTTPException, Depends
+from fastapi import Request, HTTPException
 from firebase_admin import auth, credentials, initialize_app
 from services.secret_manager import getsecret
 import json
