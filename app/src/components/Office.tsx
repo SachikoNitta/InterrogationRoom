@@ -1,32 +1,42 @@
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Mail, Phone, Coins, Settings, User, FileText, Calendar, Clock } from "lucide-react";
-import React from "react";
-import { auth } from "@/lib/auth";
-import { signOut } from "firebase/auth";
+"use client"
+
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { ArrowLeft, Mail, Phone, Coins, Settings, User, FileText, Calendar, Clock, Shield } from "lucide-react"
+import type React from "react"
+import { auth } from "@/lib/auth"
+import { signOut } from "firebase/auth"
 
 interface OfficeProps {
-  onBackToEntrance: () => void;
-  onPreferencesClick: () => void;
-  onClickCase: (caseId?: string) => void; // caseIdを受け取れるように変更
-  cases: any[];
-  getStatusColor: (status: string) => string;
+  onBackToEntrance: () => void
+  onPreferencesClick: () => void
+  onAccountSettingsClick: () => void
+  onClickCase: (caseId?: string) => void
+  cases: any[]
+  getStatusColor: (status: string) => string
 }
 
-export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesClick, onClickCase, cases, getStatusColor }) => {
+export const Office: React.FC<OfficeProps> = ({
+  onBackToEntrance,
+  onPreferencesClick,
+  onAccountSettingsClick,
+  onClickCase,
+  cases,
+  getStatusColor,
+}) => {
   // lastUpdatedAtで降順ソート
   const sortedCases = [...cases].sort((a, b) => {
-    if (!a.lastUpdated || !b.lastUpdated) return 0;
-    return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
-  });
+    if (!a.lastUpdated || !b.lastUpdated) return 0
+    return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+  })
 
   const handleSignOut = async () => {
-    await signOut(auth);
-    onBackToEntrance();
-  };
+    await signOut(auth)
+    onBackToEntrance()
+  }
 
   return (
     <Card className="w-full max-w-4xl shadow-lg">
@@ -44,29 +54,71 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
         </div>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
-        {/* Profile Section */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src="/placeholder.svg?height=64&width=64" alt="Detective Smith" />
-              <AvatarFallback className="text-lg">DS</AvatarFallback>
-            </Avatar>
-            <div className="space-y-1">
-              <h2 className="text-2xl font-semibold">Detective Sarah Smith</h2>
-              <p className="text-gray-600">Senior Investigator</p>
-              <div className="flex items-center space-x-4 text-sm text-gray-500">
-                <div className="flex items-center space-x-1">
-                  <Mail className="h-4 w-4" />
-                  <span>s.smith@department.gov</span>
+        {/* Police ID Card Profile Section */}
+        <div className="border border-gray-200 rounded-lg overflow-hidden shadow-md">
+          {/* ID Card Header */}
+          <div className="bg-gray-900 text-white p-3 flex items-center justify-between">
+            <div className="flex items-center">
+              <Shield className="h-6 w-6 mr-2" />
+              <h3 className="text-lg font-bold uppercase tracking-wider">Metropolitan Police Department</h3>
+            </div>
+            <div className="text-sm font-mono bg-gray-700 px-2 py-1 rounded">ID: 45892</div>
+          </div>
+
+          {/* ID Card Content */}
+          <div className="p-4 bg-white">
+            <div className="flex flex-col md:flex-row">
+              {/* Photo Section */}
+              <div className="md:mr-6 mb-4 md:mb-0 flex flex-col items-center">
+                <div className="border border-gray-300 p-1 bg-gray-50">
+                  <Avatar className="h-32 w-32">
+                    <AvatarImage src="/placeholder.svg?height=128&width=128" alt="Detective Smith" />
+                    <AvatarFallback className="text-3xl bg-gray-200">DS</AvatarFallback>
+                  </Avatar>
                 </div>
-                <div className="flex items-center space-x-1">
-                  <Phone className="h-4 w-4" />
-                  <span>+1 (555) 123-4567</span>
+                <div className="mt-2 text-center">
+                  <div className="text-xs text-gray-600">ISSUED: 05/12/2023</div>
+                  <div className="text-xs text-gray-600">EXPIRES: Never</div>
+                </div>
+              </div>
+
+              {/* Details Section */}
+              <div className="flex-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase">Name</div>
+                    <div className="font-semibold text-lg">Sarah Smith</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase">Rank</div>
+                    <div className="font-semibold">Detective</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase">Division</div>
+                    <div className="font-semibold">Homicide</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase">Badge No.</div>
+                    <div className="font-semibold">#7392</div>
+                  </div>
+                </div>
+
+                {/* Signature */}
+                <div className="mt-4 pt-2 border-t border-gray-200">
+                  <div className="italic font-serif text-lg text-gray-700">Sarah Smith</div>
+                  <div className="text-xs text-gray-500">AUTHORIZED SIGNATURE</div>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* ID Card Footer */}
+          <div className="bg-gray-900 text-white p-2 text-xs text-center">
+            This ID remains the property of the Metropolitan Police Department. If found, please return to MPD
+            Headquarters.
+          </div>
         </div>
+
         <Separator />
         {/* AI Tokens Section */}
         <div className="space-y-4">
@@ -103,13 +155,9 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
               <Settings className="mr-2 h-4 w-4" />
               Preferences
             </Button>
-            <Button variant="outline">
+            <Button onClick={onAccountSettingsClick}>
               <User className="mr-2 h-4 w-4" />
-              Edit Profile
-            </Button>
-            <Button variant="outline">
-              <FileText className="mr-2 h-4 w-4" />
-              Generate Report
+              Account Settings
             </Button>
           </div>
         </div>
@@ -137,7 +185,7 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
                       </div>
                       <div className="flex items-center space-x-1">
                         <Clock className="h-3 w-3" />
-                        <span>{case_.createdAt ? case_.createdAt.split("T")[1].slice(0,5) : ""}</span>
+                        <span>{case_.createdAt ? case_.createdAt.split("T")[1].slice(0, 5) : ""}</span>
                       </div>
                       <span>{case_.logs.length} messages</span>
                     </div>
@@ -152,5 +200,5 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onPreferencesC
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
