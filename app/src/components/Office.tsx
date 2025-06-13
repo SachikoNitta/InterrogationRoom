@@ -62,7 +62,6 @@ export const Office: React.FC<OfficeProps> = ({
               <Shield className="h-6 w-6 mr-2" />
               <h3 className="text-lg font-bold uppercase tracking-wider">Metropolitan Police Department</h3>
             </div>
-            <div className="text-sm font-mono bg-gray-700 px-2 py-1 rounded">ID: 45892</div>
           </div>
 
           {/* ID Card Content */}
@@ -83,29 +82,28 @@ export const Office: React.FC<OfficeProps> = ({
               </div>
 
               {/* Details Section */}
-              <div className="flex-1">
+              <div className="flex-1 relative">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
                   <div>
                     <div className="text-xs text-gray-500 uppercase">Name</div>
                     <div className="font-semibold text-lg">Sarah Smith</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase">Rank</div>
-                    <div className="font-semibold">Detective</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase">Division</div>
-                    <div className="font-semibold">Homicide</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase">Badge No.</div>
-                    <div className="font-semibold">#7392</div>
+                    <div className="flex flex-row space-x-6 mt-1">
+                      <div>
+                        <div className="text-xs text-gray-500 uppercase">Division</div>
+                        <div className="font-semibold">Homicide</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500 uppercase">Rank</div>
+                        <div className="font-semibold">Detective</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Signature */}
-                <div className="mt-4 pt-2 border-t border-gray-200">
-                  <div className="italic font-serif text-lg text-gray-700">Sarah Smith</div>
+                {/* Signature - 右下に絶対配置 */}
+                <div className="absolute right-0 bottom-0 flex flex-col items-end pr-2 pb-2 w-full">
+                  <div className="w-full border-t border-gray-300 mb-2"></div>
+                  <div className="italic font-serif text-2xl text-gray-700">Sarah Smith</div>
                   <div className="text-xs text-gray-500">AUTHORIZED SIGNATURE</div>
                 </div>
               </div>

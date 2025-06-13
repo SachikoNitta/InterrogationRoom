@@ -16,16 +16,9 @@ interface AccountSettingsProps {
 
 export const AccountSettings: React.FC<AccountSettingsProps> = ({ onBackToOffice }) => {
   const [name, setName] = useState("Sarah Smith")
-  const [email, setEmail] = useState("s.smith@mpd.gov")
-  const [phone, setPhone] = useState("+1 (555) 123-4567")
-  const [badgeNumber, setBadgeNumber] = useState("7392")
   const [department, setDepartment] = useState("Metropolitan Police Department")
   const [division, setDivision] = useState("Homicide")
   const [rank, setRank] = useState("Detective")
-  const [clearanceLevel, setClearanceLevel] = useState("3")
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
 
   const handleSaveChanges = () => {
     // Here you would implement the logic to save the changes
@@ -63,15 +56,11 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ onBackToOffice
           <div className="space-y-4 pl-7">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">Display Name</Label>
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="badge">Badge Number</Label>
-                <Input id="badge" value={badgeNumber} onChange={(e) => setBadgeNumber(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="department">Police Department</Label>
+                <Label htmlFor="department">Department</Label>
                 <Input id="department" value={department} onChange={(e) => setDepartment(e.target.value)} />
               </div>
               <div className="space-y-2">
