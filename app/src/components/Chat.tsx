@@ -20,7 +20,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState("") // 入力フィールドの状態
   const [isLoading, setIsLoading] = useState(false)
-  const [showSummary, setshowSummary] = useState(false)
+  const [showSummary, setShowSummary] = useState(false)
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
   // Caseデータを取得
@@ -134,6 +134,13 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
     }
   }
 
+  // caseData.summaryが空の場合はshowSummaryをtrueにするuseEffect
+  useEffect(() => {
+    if (caseData && (!caseData.summary || caseData.summary === "")) {
+      setShowSummary(true)
+    }
+  }, [caseData])
+
   return (
     <div className="h-full w-full flex flex-col bg-white">
       <div className="border-b px-6 py-4 flex items-center justify-between bg-white">
@@ -156,7 +163,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
       {showSummary && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-          onClick={() => setshowSummary(false)}
+          onClick={() => setShowSummary(false)}
         >
           <div
             className="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full relative max-h-[80vh] overflow-y-auto"
@@ -164,7 +171,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
           >
             <button
               className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl"
-              onClick={() => setshowSummary(false)}
+              onClick={() => setShowSummary(false)}
               aria-label="閉じる"
             >
               ×
@@ -210,7 +217,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
           <Button type="submit" disabled={isLoading || input.trim() === ""}>
             <Send className="h-4 w-4" />
           </Button>
-          <Button type="button" onClick={() => setshowSummary(true)} disabled={isLoading} title="Show Case Summary">
+          <Button type="button" onClick={() => setShowSummary(true)} disabled={isLoading} title="Show Case Summary">
               <StickyNote className="h-4 w-4" />
             </Button>
         </form>
