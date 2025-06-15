@@ -2,10 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Send, ArrowLeft, Trash2 } from "lucide-react"
+import { Send, ArrowLeft, Trash2, StickyNote } from "lucide-react"
 import type React from "react"
 import { useEffect, useState, useRef } from "react"
-import { auth } from "@/lib/auth"
 
 interface ChatProps {
   onBackToEntrance: () => void
@@ -13,7 +12,7 @@ interface ChatProps {
   setCaseId: (caseId: string | null) => void
 }
 
-export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId }) => {
+export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId }) => {
   // DBから取得したCaseデータ.
   const [caseData, setCaseData] = useState<any>(null)
   // 画面上に表示される全てのメッセージ.
@@ -21,6 +20,7 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState("") // 入力フィールドの状態
   const [isLoading, setIsLoading] = useState(false)
+  const [showSummary, setshowSummary] = useState(false)
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
   // Caseデータを取得
@@ -152,6 +152,28 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId 
           <Trash2 className="h-5 w-5 text-red-500" />
         </Button>
       </div>
+      {/* モーダル */}
+      {showSummary && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={() => setshowSummary(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full relative max-h-[80vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl"
+              onClick={() => setshowSummary(false)}
+              aria-label="閉じる"
+            >
+              ×
+            </button>
+            <h2 className="text-2xl font-bold mb-4">事件の概要</h2>
+            <div className="mb-6 whitespace-pre-line text-gray-800">{caseData.summary}</div>
+          </div>
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto p-6">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-400">
@@ -177,7 +199,7 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId 
         )}
       </div>
       <div className="border-t p-6 bg-white">
-        <form onSubmit={handleSubmit} className="flex w-full space-x-2">
+        <form onSubmit={handleSubmit} className="flex w-full space-x-2 items-center">
           <Input
             value={input}
             onChange={handleInputChange}
@@ -188,6 +210,9 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId 
           <Button type="submit" disabled={isLoading || input.trim() === ""}>
             <Send className="h-4 w-4" />
           </Button>
+          <Button type="button" onClick={() => setshowSummary(true)} disabled={isLoading} title="Show Case Summary">
+              <StickyNote className="h-4 w-4" />
+            </Button>
         </form>
       </div>
     </div>
