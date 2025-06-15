@@ -5,7 +5,7 @@ from datetime import datetime
 from schemas.case import LogEntry, Case, ChatRequest
 from repository.case_repository import *
 from services.auth import verify_id_token
-from services.gemini_client import generate_chat_response
+from services.gemini_client import generate_case_introduction, generate_suspect_response
 
 router = APIRouter()
 
@@ -17,8 +17,14 @@ def create_case(token: Dict = Depends(verify_id_token)):
       status=Case.STATUS_IN_PROGRESS,
       createdAt=datetime.now(),
       lastUpdated=datetime.now(),
+      summary="",
       logs=[]
     )
+
+    # 事件の概要を生成
+    summary = case.summary = generate_case_introduction()
+    case.summary = summary
+
     return create(case)
 
 @router.get("/api/cases", response_model=List[Case])
@@ -61,7 +67,7 @@ def chat(caseId: str, req: ChatRequest):
         append_log(caseId, log)
 
     # Geminiにリクエストを送信.
-    stream = generate_chat_response(logs, save_reply)
+    stream = generate_suspect_response(logs, save_reply)
 
     # ストリーム形式でレスポンスを返す.
     return StreamingResponse(stream, media_type="text/plain")

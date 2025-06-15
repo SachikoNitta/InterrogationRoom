@@ -23,6 +23,7 @@ class Case(BaseModel):
     status: Optional[str] = None,  # 'in_progress', 'confessed', 'failed'
     createdAt: Optional[datetime] = None
     lastUpdated: Optional[datetime] = None
+    summary: Optional[str] = None
     logs: Optional[List[LogEntry]] = None
 
 class ChatRequest(BaseModel):
