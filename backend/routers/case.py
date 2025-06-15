@@ -5,7 +5,7 @@ from datetime import datetime
 from schemas.case import LogEntry, Case, ChatRequest
 from repository.case_repository import *
 from services.auth import verify_id_token
-from services.gemini_client import generate_case_introduction, generate_suspect_response
+from services.gemini_client import generate_case_summary, generate_suspect_response
 
 router = APIRouter()
 
@@ -41,7 +41,25 @@ def get_case(caseId: str):
         return JSONResponse(status_code=404, content={"detail": "Case not found"})
     return cases
 
+@router.post("/api/cases/{caseId}/summary")
+def summary(caseId: str):
+    '''指定されたcaseIdのケースの概要を生成するAPIエンドポイント。'''
 
+    # 既存のケースを取得
+    case = get_by_case_id(caseId)
+    if not case:
+        return JSONResponse(status_code=404, content={"detail": "Case not found"})
+    
+    # 概要を保存するためのコールバック関数を定義
+    def save_summary(summary: str):
+        '''概要をDBに保存するコールバック関数。'''
+        set_summary(caseId, summary)
+
+    # ケースの概要を生成
+    stream = generate_case_summary(save_summary)
+
+    # ストリーミング形式でレスポンスを返す
+    return StreamingResponse(stream, media_type="text/plain")
 
 @router.post("/api/cases/{caseId}/chat")
 def chat(caseId: str, req: ChatRequest):

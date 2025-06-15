@@ -37,19 +37,23 @@ def build_contents_from_logs(logs = [LogEntry]) -> List[Content]:
 
     return contents
 
-def generate_case_introduction() -> str:
+def generate_case_summary(on_complete: Callable[[str], None]):
     """ 事件の概要を生成する関数。"""
     model = get_case_generator_model()
-
     part = Part.from_text('事件の概要を生成してください。')
     content = Content(role='model', parts=[part])
 
-    response = model.generate_content(contents=[content], stream=False)
-    if response.candidates and response.candidates[0].text:
-        full_text = response.candidates[0].text.strip()
-        return full_text
-    else:
-        raise ValueError("No valid response from the model.")
+    # 全文ためておくバッファー
+    buffer = "" 
+
+    # ストリーミングレスポンスを逐次処理
+    response = model.generate_content(stream=True, contents=[content])
+    for res in response:
+        if res.candidates and res.candidates[0].text:
+            buffer += res.candidates[0].text.strip()
+            yield res.candidates[0].text.strip()
+    
+    on_complete(buffer)
 
 def generate_suspect_response(logs: List[LogEntry], on_complete: Callable[[str], None]) :
     """ 指定されたログに基づいて、容疑者からの応答を生成するジェネレータ関数。"""

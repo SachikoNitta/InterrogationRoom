@@ -21,6 +21,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
   const [input, setInput] = useState("") // 入力フィールドの状態
   const [isLoading, setIsLoading] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
+  const [summaryText, setSummaryText] = useState("")
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
   // Caseデータを取得
@@ -134,12 +135,46 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
     }
   }
 
-  // caseData.summaryが空の場合はshowSummaryをtrueにするuseEffect
   useEffect(() => {
     if (caseData && (!caseData.summary || caseData.summary === "")) {
       setShowSummary(true)
     }
   }, [caseData])
+
+  // showSummaryがtrueの時、かつcaseData.summaryが空またはundefinedの時に概要生成APIを呼び出す
+  useEffect(() => {
+    if (caseData && (!caseData.summary || caseData.summary === "")) {
+      // 概要生成APIをストリームで呼び出し
+      ;(async () => {
+        setSummaryText("")
+        const res = await fetch(`${apiBaseUrl}/api/cases/${caseId}/summary`, { method: "POST" })
+        if (!res.body) return
+        const reader = res.body.getReader()
+        const decoder = new TextDecoder()
+        let done = false
+        let text = ""
+        while (!done) {
+          const { value, done: doneReading } = await reader.read()
+          done = doneReading
+          if (value) {
+            const chunk = decoder.decode(value)
+            console.log("Received chunk:", chunk)
+            for (const char of chunk) {
+              // 適宜調整可能な遅延.
+              await new Promise((resolve) => setTimeout(resolve, 50))
+              text += char
+              setSummaryText(text)
+            }
+          }
+        }
+        // 取得完了後、caseData.summaryを更新
+        setCaseData((prev: any) => (prev ? { ...prev, summary: text } : prev))
+      })()
+    }
+    else if (showSummary && caseData?.summary) {
+      setSummaryText(caseData.summary)
+    }
+  }, [showSummary, caseData, apiBaseUrl, caseId])
 
   return (
     <div className="h-full w-full flex flex-col bg-white">
@@ -167,7 +202,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
         >
           <div
             className="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full relative max-h-[80vh] overflow-y-auto"
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl"
@@ -177,7 +212,9 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
               ×
             </button>
             <h2 className="text-2xl font-bold mb-4">事件の概要</h2>
-            <div className="mb-6 whitespace-pre-line text-gray-800">{caseData.summary}</div>
+            <div className="mb-6 whitespace-pre-line text-gray-800 min-h-[4rem]">
+              {summaryText || "事件の概要を取得中..."}
+            </div>
           </div>
         </div>
       )}
@@ -218,8 +255,8 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
             <Send className="h-4 w-4" />
           </Button>
           <Button type="button" onClick={() => setShowSummary(true)} disabled={isLoading} title="Show Case Summary">
-              <StickyNote className="h-4 w-4" />
-            </Button>
+            <StickyNote className="h-4 w-4" />
+          </Button>
         </form>
       </div>
     </div>

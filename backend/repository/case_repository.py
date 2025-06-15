@@ -40,6 +40,14 @@ def delete(case_id: str):
     """指定されたcaseIdのケースを削除する"""
     db.collection('cases').document(case_id).delete()
 
+def set_summary(case_id: str, summary: str):
+    """指定されたcaseIdのケースの概要を設定する"""
+    print(f"Setting summary for case {case_id}: {summary}")
+    db.collection("cases").document(case_id).update({
+        "summary": summary,
+        "lastUpdated": firestore.SERVER_TIMESTAMP 
+    })
+
 def append_log(case_id: str, log: LogEntry):
     print(f"Appending log to case {case_id}: {log}")
     """指定されたcaseIdのケースにチャットログを追加する"""
