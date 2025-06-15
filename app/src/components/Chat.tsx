@@ -32,16 +32,20 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId 
         if (res.ok) {
           const data = await res.json()
           setCaseData(data)
-          // logsをmessages stateにセット
+          // logsをmessages stateにセット（既にmessagesが存在する場合は上書きしない）
           if (data.logs && Array.isArray(data.logs)) {
-            setMessages(
-              data.logs.map((log: any) => ({
-                role: log.role,
-                content: log.message,
-              })),
-            )
+            if (messages.length === 0) {
+              setMessages(
+                data.logs.map((log: any) => ({
+                  role: log.role,
+                  content: log.message,
+                })),
+              )
+            }
           } else {
-            setMessages([])
+            if (messages.length === 0) {
+              setMessages([])
+            }
           }
         }
       } catch (e) {
