@@ -18,10 +18,31 @@ export default function Page() {
   // Case ID state
   const [caseId, setCaseId] = useState<string | null>(null)
 
+
+  const createCase = async () => {
+    const idToken = await auth.currentUser?.getIdToken()
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+    const res = await fetch(`${apiBaseUrl}/api/cases`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Content-Type": "application/json",
+      },
+    })
+    if (!res.ok) {
+      throw new Error("Failed to create case")
+    }
+    return await res.json()
+  }
+
   // Start a Caseをクリックしたときの処理
   const handleStartCase = async () => {
+    console.log("Starting a new case...")
     setPreviousView(currentView)
-    setCaseId(null) // caseIdをリセット
+    // 新しいケースを作成
+    const newCase = await createCase()
+    console.log("New case created:", newCase)
+    setCaseId(newCase.caseId)
     setCurrentView("chat")
   }
 

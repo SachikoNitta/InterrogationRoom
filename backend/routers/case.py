@@ -21,10 +21,6 @@ def create_case(token: Dict = Depends(verify_id_token)):
       logs=[]
     )
 
-    # 事件の概要を生成
-    summary = case.summary = generate_case_introduction()
-    case.summary = summary
-
     return create(case)
 
 @router.get("/api/cases", response_model=List[Case])

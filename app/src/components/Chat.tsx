@@ -9,7 +9,7 @@ import { auth } from "@/lib/auth"
 
 interface ChatProps {
   onBackToEntrance: () => void
-  caseId?: string | null
+  caseId: string
   setCaseId: (caseId: string | null) => void
 }
 
@@ -25,7 +25,7 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId 
 
   // Caseデータを取得
   useEffect(() => {
-    if (!caseId) return
+    // APIからデータを取得
     const fetchCase = async () => {
       try {
         const res = await fetch(`${apiBaseUrl}/api/cases/${caseId}`)
@@ -70,36 +70,13 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId 
     e.preventDefault()
     if (!input.trim()) return
 
-    let usedCaseId = caseId
-    // caseIdがなければ新規作成
-    if (!usedCaseId) {
-      const idToken = await auth.currentUser?.getIdToken()
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
-      const res = await fetch(`${apiBaseUrl}/api/cases`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          "Content-Type": "application/json",
-        },
-      })
-      if (res.ok) {
-        const newCase = await res.json()
-        usedCaseId = newCase.caseId || newCase.id
-        setCaseId(usedCaseId || null)
-      } else {
-        alert("ケースの作成に失敗しました")
-        setIsLoading(false)
-        return
-      }
-    }
-
     // ユーザーのメッセージとAI返答用の空要素を同時に追加
     setMessages((prev) => [...prev, { role: "user", content: input }, { role: "model", content: "" }])
     setInput("")
     setIsLoading(true)
 
     // APIにメッセージを送信.
-    const res = await fetch(`${apiBaseUrl}/api/cases/${usedCaseId}/chat`, {
+    const res = await fetch(`${apiBaseUrl}/api/cases/${caseId}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: input }),
@@ -185,11 +162,10 @@ export const Chat: React.FC<ChatProps> = ({ onBackToEntrance, caseId, setCaseId 
             {messages.map((m, i) => (
               <div key={i} className={`mb-4 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    m.role === "user"
+                  className={`max-w-[80%] p-3 rounded-lg ${m.role === "user"
                       ? "bg-blue-500 text-white rounded-br-none"
                       : "bg-gray-200 text-gray-800 rounded-bl-none"
-                  }`}
+                    }`}
                   dangerouslySetInnerHTML={{
                     __html: m.content.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br />"),
                   }}
