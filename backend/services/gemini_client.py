@@ -38,6 +38,7 @@ def build_contents_from_logs(logs = [LogEntry]) -> List[Content]:
     return contents
 
 def generate_case_summary(on_complete: Callable[[str], None]):
+    print("Generating case summary...")
     """ 事件の概要を生成する関数。"""
     model = get_case_generator_model()
     part = Part.from_text('事件の概要を生成してください。')
@@ -47,7 +48,11 @@ def generate_case_summary(on_complete: Callable[[str], None]):
     buffer = "" 
 
     # ストリーミングレスポンスを逐次処理
-    response = model.generate_content(stream=True, contents=[content])
+    response = model.generate_content(
+        stream=True,
+        contents=[content],
+        generation_config={"temperature": 0.2}
+    )
     for res in response:
         if res.candidates and res.candidates[0].text:
             buffer += res.candidates[0].text.strip()

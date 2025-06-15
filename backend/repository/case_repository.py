@@ -42,7 +42,7 @@ def delete(case_id: str):
 
 def set_summary(case_id: str, summary: str):
     """指定されたcaseIdのケースの概要を設定する"""
-    print(f"Setting summary for case {case_id}: {summary}")
+    print(f"Setting summary for case {case_id}")
     db.collection("cases").document(case_id).update({
         "summary": summary,
         "lastUpdated": firestore.SERVER_TIMESTAMP 

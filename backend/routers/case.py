@@ -41,14 +41,22 @@ def get_case(caseId: str):
         return JSONResponse(status_code=404, content={"detail": "Case not found"})
     return cases
 
-@router.post("/api/cases/{caseId}/summary")
-def summary(caseId: str):
-    '''指定されたcaseIdのケースの概要を生成するAPIエンドポイント。'''
-
-    # 既存のケースを取得
+@router.get('/api/cases/{caseId}/summary')
+def get_case_summary(caseId: str):
+    '''指定されたcaseIdのケースの概要を取得するAPIエンドポイント。'''
     case = get_by_case_id(caseId)
     if not case:
         return JSONResponse(status_code=404, content={"detail": "Case not found"})
+    
+    summary = case.summary
+    if not summary:
+        return JSONResponse(status_code=404, content={"detail": "Summary not found"})
+    
+    return {"summary": summary}
+
+@router.post("/api/cases/{caseId}/summary")
+def summary(caseId: str):
+    '''指定されたcaseIdのケースの概要を生成するAPIエンドポイント。'''
     
     # 概要を保存するためのコールバック関数を定義
     def save_summary(summary: str):
@@ -57,6 +65,8 @@ def summary(caseId: str):
 
     # ケースの概要を生成
     stream = generate_case_summary(save_summary)
+    print(f"Generating summary for case {caseId}")
+    print('stream', stream)
 
     # ストリーミング形式でレスポンスを返す
     return StreamingResponse(stream, media_type="text/plain")
