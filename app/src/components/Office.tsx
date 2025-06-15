@@ -62,9 +62,14 @@ export const Office: React.FC<OfficeProps> = ({
             </Button>
             <CardTitle>Office</CardTitle>
           </div>
-          <Button variant="outline" size="sm" onClick={handleSignOut}>
-            Sign Out
-          </Button>
+          <div className="flex items-center space-x-3">
+            {auth.currentUser && (
+              <span className="text-xs text-gray-500">Logged in as: {auth.currentUser.displayName}</span>
+            )}
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
+              Sign Out
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
