@@ -51,7 +51,7 @@ def generate_case_summary(on_complete: Callable[[str], None]):
     response = model.generate_content(
         stream=True,
         contents=[content],
-        generation_config={"temperature": 0.2}
+        generation_config={"temperature": 2.0}
     )
     for res in response:
         if res.candidates and res.candidates[0].text:
