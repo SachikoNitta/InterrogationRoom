@@ -4,23 +4,43 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { ArrowLeft, Calendar, Clock } from "lucide-react"
-import type React from "react"
+import React, { useEffect, useState } from "react"
 import { auth } from "@/lib/auth"
 import { signOut } from "firebase/auth"
 
 interface OfficeProps {
   onBackToEntrance: () => void
   onClickCase: (caseId?: string) => void
-  cases: any[]
   getStatusColor: (status: string) => string
 }
 
 export const Office: React.FC<OfficeProps> = ({
   onBackToEntrance,
   onClickCase,
-  cases,
   getStatusColor,
 }) => {
+  const [cases, setCases] = useState<any[]>([])
+
+  // Caseデータを取得
+  useEffect(() => {
+    const fetchCases = async () => {
+      const idToken = await auth.currentUser?.getIdToken()
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+      const res = await fetch(`${apiBaseUrl}/api/cases`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setCases(data)
+      }
+    }
+    fetchCases()
+  }, [])
+
   // lastUpdatedAtで降順ソート
   const sortedCases = [...cases].sort((a, b) => {
     if (!a.lastUpdated || !b.lastUpdated) return 0
@@ -76,7 +96,7 @@ export const Office: React.FC<OfficeProps> = ({
                       <span>{case_.logs.length} messages</span>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium`}>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(case_.status)}`}>
                     {case_.status}
                   </span>
                 </div>

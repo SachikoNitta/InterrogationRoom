@@ -18,30 +18,6 @@ export default function Page() {
   // Case ID state
   const [caseId, setCaseId] = useState<string | null>(null)
 
-  // State to hold fetched cases
-  const [cases, setCases] = useState<any[]>([])
-
-  // Officeを表示するたびにケース一覧を取得
-  useEffect(() => {
-    if (currentView !== "office") return
-    const fetchCases = async () => {
-      const idToken = await auth.currentUser?.getIdToken()
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
-      const res = await fetch(`${apiBaseUrl}/api/cases`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          "Content-Type": "application/json",
-        },
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setCases(data)
-      }
-    }
-    fetchCases()
-  }, [currentView])
-
   // Start a Caseをクリックしたときの処理
   const handleStartCase = async () => {
     setPreviousView(currentView)
@@ -96,7 +72,6 @@ export default function Page() {
           <Office
             onBackToEntrance={handleBackToEntrance}
             onClickCase={handleClickCase}
-            cases={cases}
             getStatusColor={getStatusColor}
           />
         )
