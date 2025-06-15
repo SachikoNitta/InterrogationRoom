@@ -1,30 +1,22 @@
 "use client"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { auth } from "@/lib/auth"
-
 import { Entrance } from "@/components/Entrance"
 import { Office } from "@/components/Office"
-import { Preferences } from "@/components/Preferences"
 import { Chat } from "@/components/Chat"
-import { AccountSettings } from "@/components/AccountSettings"
 import { useEffect, useState } from "react"
 
 type ViewType = "entrance" | "chat" | "office" | "preferences" | "accountSettings"
 
 export default function Page() {
   const [user, loading] = useAuthState(auth)
+  // 現在のビュー
   const [currentView, setCurrentView] = useState<ViewType>("entrance")
+  // 前のビュー
   const [previousView, setPreviousView] = useState<ViewType>("entrance")
 
   // Case ID state
   const [caseId, setCaseId] = useState<string | null>(null)
-
-  // Preference states
-  const [notifications, setNotifications] = useState(true)
-  const [autoSave, setAutoSave] = useState(true)
-  const [theme, setTheme] = useState("light")
-  const [language, setLanguage] = useState("english")
-  const [dataRetention, setDataRetention] = useState("30")
 
   // State to hold fetched cases
   const [cases, setCases] = useState<any[]>([])
@@ -70,20 +62,8 @@ export default function Page() {
     setCurrentView("office")
   }
 
-  const handlePreferencesClick = () => {
-    setCurrentView("preferences")
-  }
-
-  const handleAccountSettingsClick = () => {
-    setCurrentView("accountSettings")
-  }
-
   const handleBackToEntrance = () => {
     setCurrentView("entrance")
-  }
-
-  const handleBackToOffice = () => {
-    setCurrentView("office")
   }
 
   const handleBackFromChat = () => {
@@ -115,31 +95,11 @@ export default function Page() {
         return (
           <Office
             onBackToEntrance={handleBackToEntrance}
-            onPreferencesClick={handlePreferencesClick}
-            onAccountSettingsClick={handleAccountSettingsClick}
             onClickCase={handleClickCase}
             cases={cases}
             getStatusColor={getStatusColor}
           />
         )
-      case "preferences":
-        return (
-          <Preferences
-            notifications={notifications}
-            autoSave={autoSave}
-            theme={theme}
-            language={language}
-            dataRetention={dataRetention}
-            setNotifications={setNotifications}
-            setAutoSave={setAutoSave}
-            setTheme={setTheme}
-            setLanguage={setLanguage}
-            setDataRetention={setDataRetention}
-            onBackToOffice={handleBackToOffice}
-          />
-        )
-      case "accountSettings":
-        return <AccountSettings onBackToOffice={handleBackToOffice} />
       default:
         return <Entrance onStartCase={handleStartCase} onGoToOffice={handleGoToOffice} />
     }
