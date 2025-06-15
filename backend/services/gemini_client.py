@@ -13,7 +13,7 @@ vertexai.init(project=project_id, location=location)
 
 def get_model() -> GenerativeModel:
     system_instruction = getsecret('system_prompt')
-    return GenerativeModel("gemini-1.5-flash-002", system_instruction=system_instruction)
+    return GenerativeModel("gemini-1.5-pro-002", system_instruction=system_instruction)
 
 def build_contents_from_logs(logs = [LogEntry]) -> List[Content]:
     """
