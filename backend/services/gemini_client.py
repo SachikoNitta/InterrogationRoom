@@ -9,11 +9,13 @@ from services.secret_manager import getsecret
 project_id = os.getenv("GOOGLE_CLOUD_PROJECT", 'interrogation-room')
 location = os.getenv("GOOGLE_CLOUD_LOCATION", 'asia-northeast1')
 
-vertexai.init(project=project_id, location=location)    
+vertexai.init(project=project_id, location=location)
 
-def get_model() -> GenerativeModel:
-    system_instruction = getsecret('system_prompt')
-    return GenerativeModel("gemini-1.5-pro-002", system_instruction=system_instruction)
+def get_case_generator_model() -> GenerativeModel:
+    return GenerativeModel("gemini-1.5-pro-002", system_instruction = getsecret('system_prompt_case_generator'))
+
+def get_suspect_model() -> GenerativeModel:
+    return GenerativeModel("gemini-1.5-pro-002", system_instruction = getsecret('system_prompt_suspect'))
 
 def build_contents_from_logs(logs = [LogEntry]) -> List[Content]:
     """
@@ -35,18 +37,9 @@ def build_contents_from_logs(logs = [LogEntry]) -> List[Content]:
 
     return contents
 
-def generate_chat_response(logs: List[LogEntry], on_complete: Callable[[str], None]) :
-    """
-    Generate a chat response based on the provided prompt using the Gemini model.
-    Args:
-        contents (list[Content]): A list of Content objects representing the chat history.
-    Returns:
-        str: The generated chat response.
-    
-    参考: Vertex AI Gemini APIの詳細仕様
-    https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference?hl=ja
-    """
-    model = get_model()
+def generate_suspect_response(logs: List[LogEntry], on_complete: Callable[[str], None]) :
+    """ 指定されたログに基づいて、容疑者からの応答を生成するジェネレータ関数。"""
+    model = get_suspect_model()
     contents = build_contents_from_logs(logs)
 
     # 全文ためておくバッファー
