@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth"
 import { Entrance } from "@/components/Entrance"
 import { Office } from "@/components/Office"
 import { Chat } from "@/components/Chat"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 type ViewType = "entrance" | "chat" | "office" | "preferences" | "accountSettings"
 
@@ -80,7 +80,5 @@ export default function Page() {
     }
   }
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">{renderCurrentView()}</div>
-  )
+  return <div className="h-screen w-screen bg-gray-50">{renderCurrentView()}</div>
 }
