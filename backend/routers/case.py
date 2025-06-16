@@ -116,6 +116,9 @@ def assistance(caseId: str):
     # 同じCaseの既存のログを全て取得.
     logs = case.logs if case.logs else []
 
+    # ログの末尾にアシスタンス用のメッセージを追加.
+    logs.append(LogEntry(role="assistant", message="尋問方法について、ユーザーに助言してください。", createdAt=datetime.now()))
+
     # Geminiにリクエストを送信.
     model = get_assistant_model()
     stream = generate_model_response(model, summary, logs)
