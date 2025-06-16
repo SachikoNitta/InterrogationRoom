@@ -75,23 +75,28 @@ def summary(caseId: str):
 def chat(caseId: str, req: ChatRequest):
     '''指定されたcaseIdのケースに対してチャットを行うAPIエンドポイント。'''
 
-    # ユーザーのメッセージをDBに保存.
-    log = LogEntry(role="user", message=req.message, createdAt=datetime.now())
-    append_log(caseId, log)
-
-    # 同じCaseの既存のログを全て取得.
-    case = get_by_case_id(caseId)
-    if not case:
-        return JSONResponse(status_code=404, content={"detail": "Case not found"})
-    logs = case.logs if case.logs else []
-
-    # AIの回答をDBに保存.
+    # AIの回答をDBに保存する関数.
     def save_reply(full_text: str):
         log = LogEntry(role="model", message=full_text, createdAt=datetime.now())
         append_log(caseId, log)
 
+    # ユーザーのメッセージをDBに保存.
+    log = LogEntry(role="user", message=req.message, createdAt=datetime.now())
+    append_log(caseId, log)
+    
+    # 指定されたcaseIdのケースを取得.
+    case = get_by_case_id(caseId)
+    if not case:
+        return JSONResponse(status_code=404, content={"detail": "Case not found"})
+
+    # 同じCaseの概要を取得.
+    summary = case.summary if case.summary else ""
+
+    # 同じCaseの既存のログを全て取得.
+    logs = case.logs if case.logs else []
+
     # Geminiにリクエストを送信.
-    stream = generate_suspect_response(logs, save_reply)
+    stream = generate_suspect_response(summary, logs, save_reply)
 
     # ストリーム形式でレスポンスを返す.
     return StreamingResponse(stream, media_type="text/plain")

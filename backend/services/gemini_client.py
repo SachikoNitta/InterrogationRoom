@@ -1,5 +1,6 @@
 # Gemini APIクライアント（Vertex AI公式推奨方式）
 import os
+import random
 import vertexai
 from vertexai.generative_models import GenerativeModel, Content, Part
 from typing import List, Callable
@@ -17,15 +18,18 @@ def get_case_generator_model() -> GenerativeModel:
 def get_suspect_model() -> GenerativeModel:
     return GenerativeModel("gemini-1.5-pro-002", system_instruction = getsecret('system_prompt_suspect'))
 
-def build_contents_from_logs(logs = [LogEntry]) -> List[Content]:
+def build_contents_from_summary_logs(summary=str, logs = [LogEntry]) -> List[Content]:
     """
     LogEntry型のリストからContent型のリストを生成する
-    Args:
-        pairs (List[LogEntry]): ログエントリのリスト。各エントリはロールとテキストを持つ。
-    Returns:
-        List[Content]
     """
     contents = []
+
+    # 概要が空でない場合は、最初のコンテンツとして追加
+    part = Part.from_text(summary.strip())
+    content = Content(role='model', parts=[part])
+    contents.append(content)
+
+    # ログエントリからコンテンツを生成
     for log in logs:
         message = log.message.strip()
         if not message:
@@ -38,7 +42,6 @@ def build_contents_from_logs(logs = [LogEntry]) -> List[Content]:
     return contents
 
 def generate_case_summary(on_complete: Callable[[str], None]):
-    print("Generating case summary...")
     """ 事件の概要を生成する関数。"""
     model = get_case_generator_model()
     part = Part.from_text('事件の概要を生成してください。')
@@ -60,10 +63,10 @@ def generate_case_summary(on_complete: Callable[[str], None]):
     
     on_complete(buffer)
 
-def generate_suspect_response(logs: List[LogEntry], on_complete: Callable[[str], None]) :
+def generate_suspect_response(summary: str, logs: List[LogEntry], on_complete: Callable[[str], None]) :
     """ 指定されたログに基づいて、容疑者からの応答を生成するジェネレータ関数。"""
     model = get_suspect_model()
-    contents = build_contents_from_logs(logs)
+    contents = build_contents_from_summary_logs(summary, logs)
 
     # 全文ためておくバッファー
     buffer = "" 
