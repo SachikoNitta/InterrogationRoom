@@ -18,6 +18,9 @@ def get_case_generator_model() -> GenerativeModel:
 def get_suspect_model() -> GenerativeModel:
     return GenerativeModel("gemini-1.5-pro-002", system_instruction = getsecret('system_prompt_suspect'))
 
+def get_assistant_model() -> GenerativeModel:
+    return GenerativeModel("gemini-1.5-pro-002", system_instruction = getsecret('system_prompt_assistant'))
+
 def build_contents_from_summary_logs(summary=str, logs = [LogEntry]) -> List[Content]:
     """
     LogEntry型のリストからContent型のリストを生成する
@@ -63,10 +66,12 @@ def generate_case_summary(on_complete: Callable[[str], None]):
     
     on_complete(buffer)
 
-def generate_suspect_response(summary: str, logs: List[LogEntry], on_complete: Callable[[str], None]) :
-    """ 指定されたログに基づいて、容疑者からの応答を生成するジェネレータ関数。"""
-    model = get_suspect_model()
+def generate_model_response(model: GenerativeModel, summary: str, logs: List[LogEntry], on_complete: Callable[[str], None] = None):
+    """ 指定されたログに基づいて、modelからの応答を生成するジェネレータ関数。"""
     contents = build_contents_from_summary_logs(summary, logs)
+    print(f"Generating response for summary: {summary}")
+    print(f"Number of logs: {len(logs)}")
+    print(f"Generating response with {len(contents)} contents")
 
     # 全文ためておくバッファー
     buffer = "" 
@@ -74,8 +79,10 @@ def generate_suspect_response(summary: str, logs: List[LogEntry], on_complete: C
     # ストリーミングレスポンスを逐次処理
     response = model.generate_content(stream=True, contents=contents)
     for res in response:
-      if res.candidates and res.candidates[0].text:
-        buffer += res.candidates[0].text.strip()
-        yield res.candidates[0].text.strip()
+        if res.candidates and res.candidates[0].text:
+            buffer += res.candidates[0].text.strip()
+            print(f"Yielding response: {res.candidates[0].text.strip()}")
+            yield res.candidates[0].text.strip()
     
-    on_complete(buffer)
+    if on_complete:
+        on_complete(buffer)

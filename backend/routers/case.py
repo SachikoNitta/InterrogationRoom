@@ -5,7 +5,7 @@ from datetime import datetime
 from schemas.case import LogEntry, Case, ChatRequest
 from repository.case_repository import *
 from services.auth import verify_id_token
-from services.gemini_client import generate_case_summary, generate_suspect_response
+from services.gemini_client import *
 
 router = APIRouter()
 
@@ -96,7 +96,29 @@ def chat(caseId: str, req: ChatRequest):
     logs = case.logs if case.logs else []
 
     # Geminiにリクエストを送信.
-    stream = generate_suspect_response(summary, logs, save_reply)
+    model = get_suspect_model()
+    stream = generate_model_response(model, summary, logs, save_reply)
+
+    # ストリーム形式でレスポンスを返す.
+    return StreamingResponse(stream, media_type="text/plain")
+
+@router.get("/api/cases/{caseId}/assistance")
+def assistance(caseId: str):
+    '''指定されたcaseIdのケースに対してアシスタンスを行うAPIエンドポイント。'''
+    # 指定されたcaseIdのケースを取得.
+    case = get_by_case_id(caseId)
+    if not case:
+        return JSONResponse(status_code=404, content={"detail": "Case not found"})
+
+    # 同じCaseの概要を取得.
+    summary = case.summary if case.summary else ""
+
+    # 同じCaseの既存のログを全て取得.
+    logs = case.logs if case.logs else []
+
+    # Geminiにリクエストを送信.
+    model = get_assistant_model()
+    stream = generate_model_response(model, summary, logs)
 
     # ストリーム形式でレスポンスを返す.
     return StreamingResponse(stream, media_type="text/plain")

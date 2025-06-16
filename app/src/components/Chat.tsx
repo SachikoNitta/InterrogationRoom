@@ -2,10 +2,11 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Send, ArrowLeft, Trash2, StickyNote } from "lucide-react"
+import { Send, ArrowLeft, Trash2, StickyNote, Bot } from "lucide-react"
 import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import { CaseSummaryModal } from "./CaseSummaryModal"
+import { AssistantModal } from "@/components/AssistantModal"
 
 interface ChatProps {
   onBackToEntrance: () => void
@@ -22,6 +23,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
   const [input, setInput] = useState("") // 入力フィールドの状態
   const [isLoading, setIsLoading] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
+  const [assistantModalOpen, setAssistantModalOpen] = useState(false)
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
   // Caseデータを取得
@@ -141,6 +143,11 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
     }
   }, [caseData])
 
+  // アシスタントボタンのクリック処理
+  const handleAssistant = () => {
+    setAssistantModalOpen(true)
+  }
+
   return (
     <div className="h-full w-full flex flex-col bg-white">
       <div className="border-b px-6 py-4 flex items-center justify-between bg-white">
@@ -164,6 +171,13 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
         <CaseSummaryModal
           caseId={caseId}
           setShowSummary={setShowSummary}
+        />
+      )}
+      {/* アシスタントモーダル */}
+      {assistantModalOpen && (
+        <AssistantModal
+          caseId={caseId}
+          setAssistantModalOpen={setAssistantModalOpen}
         />
       )}
       {/* メッセージ表示エリア */}
@@ -203,6 +217,16 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
           <Button type="submit" disabled={isLoading || input.trim() === ""}>
             <Send className="h-4 w-4" />
           </Button>
+          {/* アシスタントボタン */}
+          <Button
+            type="button"
+            disabled={isLoading}
+            onClick={handleAssistant}
+            title="アシスタントに質問"
+          >
+            <Bot className="h-4 w-4" />
+          </Button>
+          {/* メモアイコンボタンなど... */}
           <Button type="button" onClick={() => setShowSummary(true)} disabled={isLoading} title="Show Case Summary">
             <StickyNote className="h-4 w-4" />
           </Button>
