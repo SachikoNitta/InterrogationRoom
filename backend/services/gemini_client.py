@@ -6,6 +6,7 @@ from vertexai.generative_models import GenerativeModel, Content, Part
 from typing import List, Callable
 from schemas.case import LogEntry
 from services.secret_manager import getsecret
+from services.keyword_manager import get_random_keywords
 
 project_id = os.getenv("GOOGLE_CLOUD_PROJECT", 'interrogation-room')
 location = os.getenv("GOOGLE_CLOUD_LOCATION", 'asia-northeast1')
@@ -47,7 +48,9 @@ def build_contents_from_summary_logs(summary=str, logs = [LogEntry]) -> List[Con
 def generate_case_summary(on_complete: Callable[[str], None]):
     """ 事件の概要を生成する関数。"""
     model = get_case_generator_model()
-    part = Part.from_text('事件の概要を生成してください。')
+    keywords = get_random_keywords(3)
+    print(f"Generating case summary with keywords: {[keyword.word for keyword in keywords]}")
+    part = Part.from_text('事件の概要を生成してください。以下のキーワードを含んでください。\n' + ', '.join([keyword.word for keyword in keywords]))
     content = Content(role='model', parts=[part])
 
     # 全文ためておくバッファー
