@@ -71,6 +71,29 @@ def summary(caseId: str):
     # ストリーミング形式でレスポンスを返す
     return StreamingResponse(stream, media_type="text/plain")
 
+@router.post("/api/cases/{caseId}/title")
+def create_case_title(caseId: str):
+    '''指定されたcaseIdのケースのタイトルを生成するAPIエンドポイント。'''
+    # ケースの概要を取得
+    case = get_by_case_id(caseId)
+    if not case:
+        return JSONResponse(status_code=404, content={"detail": "Case not found"})
+    
+    summary = case.summary if case.summary else ""
+
+    # タイトルを生成
+    generate_case_title(summary)
+
+@router.get("/api/cases/{caseId}/title")
+def get_case_title(caseId: str):
+    '''指定されたcaseIdのケースのタイトルを取得するAPIエンドポイント。'''
+    case = get_by_case_id(caseId)
+    if not case:
+        return JSONResponse(status_code=404, content={"detail": "Case not found"})
+    
+    title = case.title if case.title else ""
+    return {"title": title}
+
 @router.post("/api/cases/{caseId}/chat")
 def chat(caseId: str, req: ChatRequest):
     '''指定されたcaseIdのケースに対してチャットを行うAPIエンドポイント。'''

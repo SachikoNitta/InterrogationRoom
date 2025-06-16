@@ -13,6 +13,9 @@ location = os.getenv("GOOGLE_CLOUD_LOCATION", 'asia-northeast1')
 
 vertexai.init(project=project_id, location=location)
 
+def get_general_model() -> GenerativeModel:
+    return GenerativeModel("gemini-1.5-pro-002")  
+
 def get_case_generator_model() -> GenerativeModel:
     return GenerativeModel("gemini-1.5-pro-002", system_instruction = getsecret('system_prompt_case_generator'))
 
@@ -44,6 +47,20 @@ def build_contents_from_summary_logs(summary=str, logs = [LogEntry]) -> List[Con
         contents.append(content)
 
     return contents
+
+def generate_case_title(summary: str) -> str:
+    """ 事件のタイトルを生成する関数。"""
+    model = get_general_model()
+    part = Part.from_text('この事件のタイトルを生成してください。事件の概要は以下です。\n' + summary)
+    content = Content(role='model', parts=[part])
+    response = model.generate_content(contents=[content])
+    if response.candidates and response.candidates[0].text:
+        title = response.candidates[0].text.strip()
+        print(f"Generated case title: {title}")
+        return title
+    else:
+        print("No title generated.")
+        return "Unknown Case Title"
 
 def generate_case_summary(on_complete: Callable[[str], None]):
     """ 事件の概要を生成する関数。"""
