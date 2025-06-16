@@ -28,7 +28,7 @@ def get_by_case_id(case_id: str) -> Optional[Case]:
 
 def get_by_user_id(user_id: str) -> List[Dict[str, Any]]:
     """指定されたユーザーIDに関連するケースのリストを取得する"""
-    docs = db.collection('cases').where("userId", "==", user_id).stream()
+    docs = db.collection('cases').where(field_path="userId", op_string="==", value=user_id).stream()
     return [Case(**doc.to_dict()) for doc in docs]
 
 def update(case_id: str, case: Case) -> Case:
