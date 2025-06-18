@@ -1,6 +1,6 @@
 from google.cloud import firestore
 from typing import List, Dict, Any, Optional
-from schemas.keyword import Keyword
+from models.keyword_model import Keyword
 import random
 
 db = firestore.Client()

@@ -1,6 +1,6 @@
 from google.cloud import firestore
 from typing import Optional
-from schemas.user import User
+from models.user_model import User
 
 # Firestoreクライアントの初期化
 db = firestore.Client()

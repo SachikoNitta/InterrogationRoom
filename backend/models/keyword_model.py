@@ -1,6 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional, ClassVar
-from datetime import datetime
+from typing import Optional
 
 class Keyword(BaseModel):
     """
