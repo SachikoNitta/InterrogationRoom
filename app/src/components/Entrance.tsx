@@ -36,7 +36,14 @@ export const Entrance: React.FC<EntranceProps> = ({ onStartCase, onGoToOffice })
   }, [])
 
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50">
+    <div
+      className="h-full w-full flex flex-col items-center justify-center bg-gray-50"
+      style={{
+        backgroundImage: 'url(/images/tree.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
       <div className="text-center mb-12">
         <h1 className="text-6xl font-bold text-gray-800 mb-8">Interrogation Room</h1>
       </div>
