@@ -7,15 +7,16 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { auth } from "@/lib/auth"
 import { signOut } from "firebase/auth"
+import type { CaseDto } from "@/types/case"
 
 interface OfficeProps {
   onBackToEntrance: () => void
-  onClickCase: (caseId?: string) => void
+  onClickCase: (caseId: string) => void
   getStatusColor: (status: string) => string
 }
 
 export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onClickCase, getStatusColor }) => {
-  const [cases, setCases] = useState<any[]>([])
+  const [cases, setCases] = useState<CaseDto[]>([])
 
   // Caseデータを取得
   useEffect(() => {

@@ -32,6 +32,7 @@ export const Entrance: React.FC<EntranceProps> = ({ onStartCase, onGoToOffice })
       }
     } catch (e) {
       alert("ログインに失敗しました")
+      console.error("Login error:", e)
     }
   }, [])
 

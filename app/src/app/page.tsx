@@ -16,7 +16,7 @@ export default function Page() {
   const [previousView, setPreviousView] = useState<ViewType>("entrance")
 
   // Case ID state
-  const [caseId, setCaseId] = useState<string | null>(null)
+  const [caseId, setCaseId] = useState<string>("")
 
 
   const createCase = async () => {
@@ -47,12 +47,14 @@ export default function Page() {
   }
 
   // OfficeのCaseをクリックしたときの処理
-  const handleClickCase = (caseId?: string) => {
-    if (caseId) {
-      setPreviousView(currentView)
-      setCaseId(caseId)
-      setCurrentView("chat")
+  const handleClickCase = (caseId: string) => {
+    if (!caseId) {
+      console.error("No case ID provided")
+      return
     }
+    setPreviousView(currentView)
+    setCaseId(caseId)
+    setCurrentView("chat")
   }
 
   const handleGoToOffice = () => {
@@ -87,7 +89,7 @@ export default function Page() {
     }
     switch (currentView) {
       case "chat":
-        return <Chat onBackToEntrance={handleBackFromChat} caseId={caseId} setCaseId={setCaseId} />
+        return <Chat onBackToEntrance={handleBackFromChat} caseId={caseId} />
       case "office":
         return (
           <Office

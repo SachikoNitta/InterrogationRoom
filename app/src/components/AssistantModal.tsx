@@ -8,7 +8,6 @@ interface AssistantModalProps {
 
 export const AssistantModal: React.FC<AssistantModalProps> = ({ caseId, setAssistantModalOpen }) => {
   const [text, setText] = useState("")
-  const [loading, setLoading] = useState(false)
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
   const fetchAssistantRef = useRef(false)
 
@@ -49,7 +48,7 @@ export const AssistantModal: React.FC<AssistantModalProps> = ({ caseId, setAssis
     fetchAssistant()
 
     return () => { ignore = true }
-  }, [caseId])
+  }, [caseId, apiBaseUrl])
 
   return (
     <div

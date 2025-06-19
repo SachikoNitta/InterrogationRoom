@@ -7,16 +7,16 @@ import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import { CaseSummaryModal } from "./CaseSummaryModal"
 import { AssistantModal } from "@/components/AssistantModal"
+import { CaseDto, LogEntryDto } from "@/types/case"
 
 interface ChatProps {
   onBackToEntrance: () => void
   caseId: string
-  setCaseId: (caseId: string | null) => void
 }
 
-export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId }) => {
+export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
   // DBから取得したCaseデータ.
-  const [caseData, setCaseData] = useState<any>(null)
+  const [caseData, setCaseData] = useState<CaseDto | null>(null)
   // 画面上に表示される全てのメッセージ.
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -39,7 +39,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
           if (data.logs && Array.isArray(data.logs)) {
             if (messages.length === 0) {
               setMessages(
-                data.logs.map((log: any) => ({
+                data.logs.map((log: LogEntryDto) => ({
                   role: log.role,
                   content: log.message,
                 })),
@@ -52,11 +52,11 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
           }
         }
       } catch (e) {
-        // エラー時は何もしない
+        console.error("Failed to fetch case data:", e)
       }
     }
     fetchCase()
-  }, [caseId, apiBaseUrl])
+  }, [caseId, apiBaseUrl, messages.length])
 
   // メッセージが更新されたときにスクロール
   useEffect(() => {
