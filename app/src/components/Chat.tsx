@@ -220,7 +220,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance, setCaseId 
           {/* アシスタントボタン */}
           <Button
             type="button"
-            disabled={isLoading}
+            disabled={isLoading || messages.length === 0}
             onClick={handleAssistant}
             title="アシスタントに質問"
           >
