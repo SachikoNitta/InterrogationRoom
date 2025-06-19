@@ -53,11 +53,11 @@ export const Entrance: React.FC<EntranceProps> = ({ onStartCase, onGoToOffice })
           <>
             <Button size="lg" className="h-16 text-xl" onClick={onStartCase}>
               <MessageSquare className="mr-3 h-6 w-6" />
-              Start a Case
+              取り調べを開始する
             </Button>
             <Button size="lg" variant="outline" className="h-16 text-xl" onClick={onGoToOffice}>
               <Building2 className="mr-3 h-6 w-6" />
-              Go to Office
+              オフィスに移動する
             </Button>
           </>
         ) : (

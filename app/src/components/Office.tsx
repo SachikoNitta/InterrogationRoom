@@ -56,7 +56,7 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onClickCase, g
           <Button variant="ghost" size="sm" onClick={onBackToEntrance}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-xl font-semibold">Office</h1>
+          <h1 className="text-xl font-semibold">オフィス</h1>
         </div>
         <div className="flex items-center space-x-3">
           {auth.currentUser && (
@@ -71,7 +71,7 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onClickCase, g
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Recent Cases</h3>
+              <h3 className="text-lg font-semibold">取り調べ記録</h3>
               <Badge variant="secondary">{cases.length} Total Cases</Badge>
             </div>
             <div className="space-y-3">

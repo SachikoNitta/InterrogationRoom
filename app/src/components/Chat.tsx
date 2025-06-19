@@ -155,7 +155,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
           <Button variant="ghost" size="sm" onClick={onBackToEntrance}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-xl font-semibold">Interrogation Room</h1>
+          <h1 className="text-xl font-semibold">取り調べ室</h1>
           {caseData && (
             <span className="ml-4 text-sm text-gray-500">
               Case: {caseData.caseId} / Status: {caseData.status}
