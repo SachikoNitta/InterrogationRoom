@@ -8,6 +8,8 @@ import { useEffect, useState, useRef } from "react"
 import { CaseSummaryModal } from "./CaseSummaryModal"
 import { AssistantModal } from "@/components/AssistantModal"
 import { CaseDto, LogEntryDto } from "@/types/case"
+import { Drawer } from "@/components/ui/Drawer"
+import { Spinner } from "@/components/ui/spinner"
 
 interface ChatProps {
   onBackToEntrance: () => void
@@ -24,7 +26,15 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
   const [assistantModalOpen, setAssistantModalOpen] = useState(false)
+  // 概要ドロワーの開閉state
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  // 概要データ
+  const [summary, setSummary] = useState<string>("")
+  const [summaryLoading, setSummaryLoading] = useState<boolean>(false)
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+
+  // ドロワー幅
+  const drawerWidth = 400
 
   // Caseデータを取得
   useEffect(() => {
@@ -148,90 +158,128 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
     setAssistantModalOpen(true)
   }
 
+  // 概要取得ロジック
+  useEffect(() => {
+    if (!drawerOpen) return
+    const fetchSummary = async () => {
+      setSummaryLoading(true)
+      setSummary("")
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/cases/${caseId}/summary`)
+        if (res.ok) {
+          const data = await res.json()
+          setSummary(data.summary || "")
+        } else {
+          setSummary("")
+        }
+      } catch {
+        setSummary("")
+      }
+      setSummaryLoading(false)
+    }
+    fetchSummary()
+  }, [drawerOpen, caseId, apiBaseUrl])
+
   return (
-    <div className="h-full w-full flex flex-col bg-white">
-      <div className="border-b px-6 py-4 flex items-center justify-between bg-white">
-        <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="sm" onClick={onBackToEntrance}>
-            <ArrowLeft className="h-4 w-4" />
+    <div className="h-full w-full flex flex-col bg-white relative">
+      <div
+        className="flex-1 flex flex-col transition-all duration-300"
+        style={drawerOpen ? { width: `calc(100vw - ${drawerWidth}px)`, marginRight: `${drawerWidth}px` } : { width: "100vw" }}
+      >
+        <div className="border-b px-6 py-4 flex items-center justify-between bg-white">
+          <div className="flex items-center space-x-3">
+            <Button variant="ghost" size="sm" onClick={onBackToEntrance}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <h1 className="text-xl font-semibold">取り調べ室</h1>
+            {caseData && (
+              <span className="ml-4 text-sm text-gray-500">
+                Case: {caseData.caseId} / Status: {caseData.status}
+              </span>
+            )}
+          </div>
+          <Button variant="ghost" size="icon" onClick={handleDeleteCase} title="Delete Case">
+            <Trash2 className="h-5 w-5 text-red-500" />
           </Button>
-          <h1 className="text-xl font-semibold">取り調べ室</h1>
-          {caseData && (
-            <span className="ml-4 text-sm text-gray-500">
-              Case: {caseData.caseId} / Status: {caseData.status}
-            </span>
+        </div>
+        {/* モーダル */}
+        {showSummary && (
+          <CaseSummaryModal
+            caseId={caseId}
+            setShowSummary={setShowSummary}
+          />
+        )}
+        {/* アシスタントモーダル */}
+        {assistantModalOpen && (
+          <AssistantModal
+            caseId={caseId}
+            setAssistantModalOpen={setAssistantModalOpen}
+          />
+        )}
+        {/* メッセージ表示エリア */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {messages.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-gray-400">
+              <p>Send a message to start chatting with the AI</p>
+            </div>
+          ) : (
+            <>
+              {messages.map((m, i) => (
+                <div key={i} className={`mb-4 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${m.role === "user"
+                        ? "bg-blue-500 text-white rounded-br-none"
+                        : "bg-gray-200 text-gray-800 rounded-bl-none"
+                      }`}
+                    dangerouslySetInnerHTML={{
+                      __html: m.content.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br />"),
+                    }}
+                  />
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </>
           )}
         </div>
-        <Button variant="ghost" size="icon" onClick={handleDeleteCase} title="Delete Case">
-          <Trash2 className="h-5 w-5 text-red-500" />
-        </Button>
+        <div className="border-t p-6 bg-white flex items-center justify-between">
+          <form onSubmit={handleSubmit} className="flex w-full space-x-2 items-center">
+            <Input
+              value={input}
+              onChange={handleInputChange}
+              placeholder="Type your message..."
+              className="flex-grow"
+              disabled={isLoading}
+            />
+            <Button type="submit" disabled={isLoading || input.trim() === ""}>
+              <Send className="h-4 w-4" />
+            </Button>
+            {/* アシスタントボタン */}
+            <Button
+              type="button"
+              disabled={isLoading || messages.length === 0}
+              onClick={handleAssistant}
+              title="アシスタントに質問"
+            >
+              <Bot className="h-4 w-4" />
+            </Button>
+            {/* 概要ドロワートグルボタン（アシスタントボタンの右、同じspace-x-2間隔） */}
+            <Button
+              type="button"
+              onClick={() => setDrawerOpen((prev) => !prev)}
+              title="事件の概要を表示/非表示"
+            >
+              <StickyNote className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
       </div>
-      {/* モーダル */}
-      {showSummary && (
-        <CaseSummaryModal
-          caseId={caseId}
-          setShowSummary={setShowSummary}
-        />
-      )}
-      {/* アシスタントモーダル */}
-      {assistantModalOpen && (
-        <AssistantModal
-          caseId={caseId}
-          setAssistantModalOpen={setAssistantModalOpen}
-        />
-      )}
-      {/* メッセージ表示エリア */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            <p>Send a message to start chatting with the AI</p>
-          </div>
-        ) : (
-          <>
-            {messages.map((m, i) => (
-              <div key={i} className={`mb-4 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[80%] p-3 rounded-lg ${m.role === "user"
-                      ? "bg-blue-500 text-white rounded-br-none"
-                      : "bg-gray-200 text-gray-800 rounded-bl-none"
-                    }`}
-                  dangerouslySetInnerHTML={{
-                    __html: m.content.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br />"),
-                  }}
-                />
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </>
-        )}
-      </div>
-      <div className="border-t p-6 bg-white">
-        <form onSubmit={handleSubmit} className="flex w-full space-x-2 items-center">
-          <Input
-            value={input}
-            onChange={handleInputChange}
-            placeholder="Type your message..."
-            className="flex-grow"
-            disabled={isLoading}
-          />
-          <Button type="submit" disabled={isLoading || input.trim() === ""}>
-            <Send className="h-4 w-4" />
-          </Button>
-          {/* アシスタントボタン */}
-          <Button
-            type="button"
-            disabled={isLoading || messages.length === 0}
-            onClick={handleAssistant}
-            title="アシスタントに質問"
-          >
-            <Bot className="h-4 w-4" />
-          </Button>
-          {/* メモアイコンボタンなど... */}
-          <Button type="button" onClick={() => setShowSummary(true)} disabled={isLoading} title="Show Case Summary">
-            <StickyNote className="h-4 w-4" />
-          </Button>
-        </form>
-      </div>
+      {/* 概要ドロワー */}
+      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} width={`${drawerWidth}px`} hideCloseButton>
+        <h2 className="text-2xl font-bold mb-4">事件の概要</h2>
+        <div className="mb-6 whitespace-pre-line text-gray-800 min-h-[4rem]">
+          {summaryLoading ? <Spinner size={32} /> : (summary || "この事件の概要はまだありません。")}
+        </div>
+      </Drawer>
     </div>
   )
 }

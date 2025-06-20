@@ -94,13 +94,6 @@ export const CaseSummaryModal: React.FC<CaseSummaryModalProps> = ({
         className="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full relative max-h-[80vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
-        <button
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl"
-          onClick={onClose}
-          aria-label="閉じる"
-        >
-          ×
-        </button>
         <h2 className="text-2xl font-bold mb-4">取り調べメモ</h2>
         <div className="mb-6 whitespace-pre-line text-gray-800 min-h-[4rem]">
           {loading && summary === "" ? (
