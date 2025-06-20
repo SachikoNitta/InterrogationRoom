@@ -214,7 +214,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
                 <div key={i} className={`mb-4 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div
                     className={`max-w-[80%] p-3 rounded-lg ${m.role === "user"
-                        ? "bg-blue-500 text-white rounded-br-none"
+                        ? "bg-black text-white rounded-br-none"
                         : "bg-gray-200 text-gray-800 rounded-bl-none"
                       }`}
                     dangerouslySetInnerHTML={{
