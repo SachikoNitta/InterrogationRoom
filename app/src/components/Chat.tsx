@@ -217,10 +217,15 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
                         ? "bg-black text-white rounded-br-none"
                         : "bg-gray-200 text-gray-800 rounded-bl-none"
                       }`}
-                    dangerouslySetInnerHTML={{
-                      __html: m.content.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br />"),
-                    }}
-                  />
+                  >
+                    {m.role === "model" && m.content === "" ? (
+                      <Spinner size={24} />
+                    ) : (
+                      <span dangerouslySetInnerHTML={{
+                        __html: m.content.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br />"),
+                      }} />
+                    )}
+                  </div>
                 </div>
               ))}
               <div ref={messagesEndRef} />
@@ -252,7 +257,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
       </div>
       {/* 概要ドロワー */}
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} width={`${drawerWidth}px`} hideCloseButton>
-        <h2 className="text-2xl font-bold mb-4">事件の概要</h2>
+        <h2 className="text-2xl font-bold mb-4">取り調べメモ</h2>
         <div className="mb-6 whitespace-pre-line text-gray-800 min-h-[4rem]">
           {summaryLoading ? <Spinner size={32} /> : (summary || "この事件の概要はまだありません。")}
         </div>
