@@ -117,26 +117,6 @@ def generate_suspect_response(caseId: str, req: case_request.ChatRequest) -> Str
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.generate_suspect_response: {e}")
 
-def generate_assistance_response(caseId: str):
-    try:
-        case = case_repo.get_by_case_id(caseId)
-        if not case:
-            raise Exception("Case not found")
-        summary = case.summary if case.summary else ""
-        logs = case.logs if case.logs else []
-        model = gemini_client.get_model("gemini-1.5-pro-002", system_instruction = secret_manager.getsecret('system_prompt_assistant'))
-        stream = gemini_client.generate_stream_response(
-            model,
-            contents=build_gemini_contents(
-                summary,
-                logs,
-                extra="以上が、ユーザーと容疑者の会話です。後輩刑事としてユーザーに一言助言をしてください。"
-            ),
-        )
-        return StreamingResponse(stream, media_type="text/plain")
-    except Exception as e:
-        raise RuntimeError(f"Unexpected error in services.generate_assistance_response: {e}")
-
 def delete_case(caseId: str):
     try:
         case_repo.delete(caseId)

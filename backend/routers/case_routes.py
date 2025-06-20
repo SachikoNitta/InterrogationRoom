@@ -57,14 +57,6 @@ def generate_suspect_response(caseId: str, req: case_request.ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/cases/{caseId}/assistance")
-def generate_assistance_response(caseId: str):
-    '''指定されたcaseIdのケースに対してアシスタンスを生成するAPIエンドポイント。'''
-    try:
-        return case_service.generate_assistance_response(caseId)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 @router.delete("/api/cases/{caseId}")
 def delete_case(caseId: str):
     '''指定されたcaseIdのケースを削除するAPIエンドポイント。'''
