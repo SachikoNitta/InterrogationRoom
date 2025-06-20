@@ -26,8 +26,8 @@ def generate_stream_response(model: GenerativeModel, contents: List[Content], on
     response = model.generate_content(stream=True, contents=contents)
     for res in response:
         if res.candidates and res.candidates[0].text:
-            buffer += res.candidates[0].text
-            yield res.candidates[0].text
+            buffer += res.candidates[0].text.rstrip("\n")
+            yield res.candidates[0].text.rstrip("\n")
 
     if on_complete:
-        on_complete(buffer)
+        on_complete(buffer.rstrip("\n"))
