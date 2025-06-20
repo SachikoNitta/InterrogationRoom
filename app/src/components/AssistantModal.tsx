@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react"
 import { Bot } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
 
 interface AssistantModalProps {
   caseId: string
@@ -71,7 +72,7 @@ export const AssistantModal: React.FC<AssistantModalProps> = ({ caseId, setAssis
           <h2 className="text-2xl font-bold">アシスタント</h2>
         </div>
         <div className="mb-6 whitespace-pre-line text-gray-800 min-h-[4rem]">
-          {text === "" ? "生成中..." : text}
+          {text === "" ? <Spinner size={32} /> : text}
         </div>
       </div>
     </div>

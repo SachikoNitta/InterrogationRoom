@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { auth } from "@/lib/auth"
+import { Spinner } from "@/components/ui/spinner"
 
 interface CaseSummaryModalProps {
   caseId: string
@@ -102,7 +103,11 @@ export const CaseSummaryModal: React.FC<CaseSummaryModalProps> = ({
         </button>
         <h2 className="text-2xl font-bold mb-4">事件の概要</h2>
         <div className="mb-6 whitespace-pre-line text-gray-800 min-h-[4rem]">
-          {loading && summary === "" ? "生成中..." : summary || "この事件の概要はまだありません。"}
+          {loading && summary === "" ? (
+            <Spinner size="large" />
+          ) : (
+            summary || "この事件の概要はまだありません。"
+          )}
         </div>
       </div>
     </div>

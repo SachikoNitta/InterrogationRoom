@@ -8,6 +8,7 @@ import { useEffect, useState } from "react"
 import { auth } from "@/lib/auth"
 import { signOut } from "firebase/auth"
 import type { CaseDto } from "@/types/case"
+import { Spinner } from "@/components/ui/spinner"
 
 interface OfficeProps {
   onBackToEntrance: () => void
@@ -75,33 +76,39 @@ export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onClickCase, g
               <Badge variant="secondary">{cases.length} Total Cases</Badge>
             </div>
             <div className="space-y-3">
-              {sortedCases.map((case_) => (
-                <div
-                  key={case_.caseId}
-                  className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => onClickCase(case_.caseId)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium mb-1">{case_.caseId}</h4>
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>{case_.createdAt ? case_.createdAt.split("T")[0] : ""}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{case_.createdAt ? case_.createdAt.split("T")[1].slice(0, 5) : ""}</span>
-                        </div>
-                        <span>{case_.logs.length} messages</span>
-                      </div>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(case_.status)}`}>
-                      {case_.status}
-                    </span>
-                  </div>
+              {cases.length === 0 ? (
+                <div className="flex justify-center py-12">
+                  <Spinner size={40} />
                 </div>
-              ))}
+              ) : (
+                sortedCases.map((case_) => (
+                  <div
+                    key={case_.caseId}
+                    className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => onClickCase(case_.caseId)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-medium mb-1">{case_.caseId}</h4>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{case_.createdAt ? case_.createdAt.split("T")[0] : ""}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{case_.createdAt ? case_.createdAt.split("T")[1].slice(0, 5) : ""}</span>
+                          </div>
+                          <span>{case_.logs.length} messages</span>
+                        </div>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(case_.status)}`}>
+                        {case_.status}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
