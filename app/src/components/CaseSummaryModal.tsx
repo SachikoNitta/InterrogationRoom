@@ -101,7 +101,7 @@ export const CaseSummaryModal: React.FC<CaseSummaryModalProps> = ({
         >
           ×
         </button>
-        <h2 className="text-2xl font-bold mb-4">事件の概要</h2>
+        <h2 className="text-2xl font-bold mb-4">取り調べメモ</h2>
         <div className="mb-6 whitespace-pre-line text-gray-800 min-h-[4rem]">
           {loading && summary === "" ? (
             <Spinner size="large" />

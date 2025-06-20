@@ -68,8 +68,7 @@ export const AssistantModal: React.FC<AssistantModalProps> = ({ caseId, setAssis
           ×
         </button>
         <div className="flex items-center mb-4">
-          <Bot className="h-6 w-6 mr-2 text-blue-500" />
-          <h2 className="text-2xl font-bold">アシスタント</h2>
+          <h2 className="text-2xl font-bold">新米刑事の助言</h2>
         </div>
         <div className="mb-6 whitespace-pre-line text-gray-800 min-h-[4rem]">
           {text === "" ? <Spinner size={32} /> : text}
