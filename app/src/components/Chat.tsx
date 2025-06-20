@@ -2,11 +2,10 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Send, ArrowLeft, Trash2, StickyNote, Bot } from "lucide-react"
+import { Send, ArrowLeft, Trash2, StickyNote } from "lucide-react"
 import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import { CaseSummaryModal } from "./CaseSummaryModal"
-import { AssistantModal } from "@/components/AssistantModal"
 import { CaseDto, LogEntryDto } from "@/types/case"
 import { Drawer } from "@/components/ui/Drawer"
 import { Spinner } from "@/components/ui/spinner"
@@ -25,7 +24,6 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
   const [input, setInput] = useState("") // 入力フィールドの状態
   const [isLoading, setIsLoading] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
-  const [assistantModalOpen, setAssistantModalOpen] = useState(false)
   // 概要ドロワーの開閉state
   const [drawerOpen, setDrawerOpen] = useState(false)
   // 概要データ
@@ -153,11 +151,6 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
     }
   }, [caseData])
 
-  // アシスタントボタンのクリック処理
-  const handleAssistant = () => {
-    setAssistantModalOpen(true)
-  }
-
   // 概要取得ロジック
   useEffect(() => {
     if (!drawerOpen) return
@@ -209,13 +202,6 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
             setShowSummary={setShowSummary}
           />
         )}
-        {/* アシスタントモーダル */}
-        {assistantModalOpen && (
-          <AssistantModal
-            caseId={caseId}
-            setAssistantModalOpen={setAssistantModalOpen}
-          />
-        )}
         {/* メッセージ表示エリア */}
         <div className="flex-1 overflow-y-auto p-6">
           {messages.length === 0 ? (
@@ -252,15 +238,6 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
             />
             <Button type="submit" disabled={isLoading || input.trim() === ""}>
               <Send className="h-4 w-4" />
-            </Button>
-            {/* アシスタントボタン */}
-            <Button
-              type="button"
-              disabled={isLoading || messages.length === 0}
-              onClick={handleAssistant}
-              title="アシスタントに質問"
-            >
-              <Bot className="h-4 w-4" />
             </Button>
             {/* 概要ドロワートグルボタン（アシスタントボタンの右、同じspace-x-2間隔） */}
             <Button
