@@ -55,8 +55,10 @@ export const SummaryDrawerContent: React.FC<SummaryDrawerContentProps> = ({ summ
               <div className="flex items-start gap-3">
                 <FileText className="w-4 h-4 mt-1 text-muted-foreground" />
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-muted-foreground">タイトル</div>
-                  <div className="font-semibold">{summary.summaryName}</div>
+                  <div className="text-sm font-medium text-muted-foreground">説明</div>
+                  <div className="text-sm leading-relaxed whitespace-pre-line bg-muted/50 p-3 rounded">
+                    {summary.overview}
+                  </div>
                 </div>
               </div>
 
