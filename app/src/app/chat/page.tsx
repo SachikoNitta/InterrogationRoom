@@ -188,7 +188,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-white relative">
+    <div className="h-screen w-full flex flex-col bg-white relative">
       <div
         className="flex-1 flex flex-col transition-all duration-300"
         style={drawerOpen ? { width: `calc(100vw - ${drawerWidth}px)`, marginRight: `${drawerWidth}px` } : { width: "100vw" }}
