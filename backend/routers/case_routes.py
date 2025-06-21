@@ -18,13 +18,16 @@ def create_my_case(req: case_request.CreateCaseRequest, user_id: dict = Depends(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/cases/{case_id}", response_model=case_model.Case)
-def get_my_case_by_case_id(case_id: str, user_id: str = Depends(auth_service.get_user_id)) -> case_model.Case:
+@router.get("/api/cases/{case_id}")
+def get_my_case_by_case_id(case_id: str, user_id: str = Depends(auth_service.get_user_id)) -> case_model.Case | None:
     '''指定されたcaseIdのケースを取得するAPIエンドポイント。'''
-    try:
-        return case_service.get_my_case_by_case_id(user_id, case_id)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    existing = case_service.get_my_case_by_case_id(user_id, case_id)
+    if existing:
+        print(f"Found case with ID {case_id}: {existing}")
+        return existing
+    else:
+        print(f"No case found with ID {case_id}")
+        raise HTTPException(status_code=404, detail="Case not found")
 
 @router.get("/api/cases/summary/{summary_id}")   
 def get_my_case_by_summary_id(summary_id: str, user_id: str = Depends(auth_service.get_user_id)) -> case_model.Case | None:

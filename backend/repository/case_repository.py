@@ -55,18 +55,20 @@ def get_by_summary_id_and_user_id(summary_id: str, user_id: str) -> Optional[cas
         raise RuntimeError(f"Failed to get case by summary id: {e}")
 
 def append_log(case_id: str, user_id: str, log: case_model.LogEntry):
-    """指定されたcaseIdとuserIdのケースにログを追加する"""
-    doc = get_by_case_id_and_user_id(case_id, user_id)
-    if not doc:
-        raise ValueError(f"Case with ID {case_id} not found for user {user_id}")
-    log_entry = {
-        "role": log.role,
-        "message": log.message,
-        "createdAt": log.createdAt.isoformat() if log.createdAt else None
-    }
-    doc.update({
-        "logs": firestore.ArrayUnion([log_entry])
-    })
+    """指定されたcaseIdのケースにログを追加する"""
+    try:
+        doc_ref = db.collection('cases').document(case_id)
+
+        log_entry = {
+            "role": log.role,
+            "message": log.message,
+            "createdAt": log.createdAt.isoformat() if log.createdAt else None
+        }
+        doc_ref.update({
+            "logs": firestore.ArrayUnion([log_entry])
+        })
+    except Exception as e:
+        raise RuntimeError(f"Failed to append log to case: {e}")
 
 def delete_by_case_id_and_user_id(case_id: str, user_id: str):
     """指定されたcaseIdとuserIdのケースを削除する"""

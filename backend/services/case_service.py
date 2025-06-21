@@ -4,6 +4,7 @@ from fastapi.responses import StreamingResponse
 import models.case_model as case_model
 import schemas.case_request as case_request
 import repository.case_repository as case_repo
+import repository.summary_repository as summary_repo
 import services.gemini_client as gemini_client
 import services.secret_manager as secret_manager
 import services.keyword_manager as keyword_manager
@@ -69,7 +70,11 @@ def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> St
             raise Exception("Case not found")
 
         logs = case.logs if case.logs else []
-        model = gemini_client.get_model("gemini-1.5-pro-002", system_instruction = prompt_manager.get_prompt("suspect_system_prompt.txt"))
+        system_prompt = prompt_manager.get_prompt("suspect_system_prompt.txt")
+        summary = summary_repo.get_by_summary_id(case.summaryId)
+        system_prompt += "事件の概要: " + summary.json()
+        print(f"System prompt: {system_prompt}")
+        model = gemini_client.get_model("gemini-1.5-pro-002", system_instruction = system_prompt)
         stream = gemini_client.generate_stream_response(
             model,
             contents=build_gemini_contents(logs=logs),
@@ -77,7 +82,7 @@ def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> St
         )
         return StreamingResponse(stream, media_type="text/plain")
     except Exception as e:
-        raise RuntimeError(f"Unexpected error in services.generate_suspect_response: {e}")
+        raise RuntimeError(f"Unexpected error in services.generate_my_suspect_response: {e}")
 
 def delete_my_case(case_id: str, user_id: str):
     try:

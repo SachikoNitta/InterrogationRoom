@@ -140,9 +140,16 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, { role: "user", content: input }, { role: "model", content: "" }])
     setInput("")
     setIsLoading(true)
+    const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) {
+        notFound()
+      }
     const res = await fetch(`${apiBaseUrl}/api/cases/${caseData?.caseId}/chat`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ message: input }),
     })
     if (!res.body) return
