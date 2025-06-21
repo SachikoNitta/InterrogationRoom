@@ -10,6 +10,15 @@ def get_summary(summary_id: str):
         raise HTTPException(status_code=404, detail="Summary not found")
     return summary
 
+@router.get("/summaries")
+def get_all_summaries():
+    try:
+        return summary_service.get_all_summaries()
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
 @router.post("/summaries")
 def generate_summary(case_id: str):
     try:

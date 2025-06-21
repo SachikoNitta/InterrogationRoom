@@ -40,3 +40,12 @@ def generate_summary() -> summary_model.Summary:
     
     return summary
 
+def get_all_summaries() -> list[summary_model.Summary]:
+    try:
+        summaries = summary_repository.get_all()
+        if not summaries:
+            raise RuntimeError("No summaries found")
+        return summaries
+    except Exception as e:
+        raise RuntimeError(f"Failed to retrieve summaries: {e}")
+

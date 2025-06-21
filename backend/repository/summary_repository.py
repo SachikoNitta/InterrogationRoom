@@ -22,3 +22,12 @@ def get_summary_by_id(summary_id: str) -> summary_model.Summary:
             raise ValueError(f"Summary with id {summary_id} does not exist.")
     except Exception as e:
         raise RuntimeError(f"Failed to get summary by id: {e}")
+
+def get_all() -> list[summary_model.Summary]:
+    """全てのサマリーを取得する"""
+    try:
+        docs = db.collection('summaries').stream()
+        summaries = [summary_model.Summary(**doc.to_dict()) for doc in docs]
+        return summaries
+    except Exception as e:
+        raise RuntimeError(f"Failed to retrieve summaries: {e}")
