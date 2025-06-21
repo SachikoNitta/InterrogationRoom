@@ -4,6 +4,7 @@
   "summaryName": "サンプル事件",
   "dateOfIncident": "2025-06-10",
   "overview": "2025年6月10日、東京都内で強盗事件が発生...",
+  "category": "窃盗"
   "statements": [
     {
       "name": "山田太郎",

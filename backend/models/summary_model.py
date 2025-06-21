@@ -30,6 +30,7 @@ class Summary(BaseModel):
     summaryName: Optional[str] = None
     dateOfIncident: Optional[str] = None
     overview: Optional[str] = None
+    category: Optional[str] = None
     statements: Optional[List[Statement]] = None
     physicalEvidence: Optional[List[Evidence]] = None
     inspectionRecord: Optional[InspectionRecord] = None
