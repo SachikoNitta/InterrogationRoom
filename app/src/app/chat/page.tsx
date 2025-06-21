@@ -7,7 +7,6 @@ import { Send, ArrowLeft, Trash2, StickyNote } from "lucide-react"
 import { Drawer } from "@/components/ui/Drawer"
 import { Spinner } from "@/components/ui/spinner"
 import { Case, LogEntry } from "@/types/case"
-import { useAuthState } from "react-firebase-hooks/auth"
 import { auth } from "@/lib/auth"
 import { Summary } from "@/types/summary"
 import { SummaryDrawerContent } from "@/components/SummaryDrawerContent"
@@ -21,7 +20,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(true)
   const [summary, setSummary] = useState<Summary | null>(null)
   const [summaryLoading, setSummaryLoading] = useState<boolean>(false)
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
@@ -29,15 +28,16 @@ export default function ChatPage() {
 
   // 事件の概要を取得
   useEffect(() => {
-    if (!drawerOpen) return
     const fetchSummary = async () => {
       setSummaryLoading(true)
       setSummary(null)
       try {
-        const idToken = await auth.currentUser?.getIdToken()
-        if (!idToken) {
-          notFound()
+        const user = auth.currentUser
+        if (!user) {
+          console.log("⏳ Waiting for Firebase user...")
+          return // 🔁 ユーザー未取得時はreturn、次のレンダリングで再実行される
         }
+        const idToken = await user.getIdToken()
         const res = await fetch(`${apiBaseUrl}/api/summaries/${summaryId}`, {
           method: "GET",
           headers: {
@@ -48,15 +48,25 @@ export default function ChatPage() {
         if (res.ok) {
           const data = await res.json()
           setSummary(data || "")
-        } else {
         }
-      } catch {
+      } catch (err) {
+        console.error("❌ Failed to fetch summary", err)
         setSummary(null)
+      } finally {
+        setSummaryLoading(false)
       }
-      setSummaryLoading(false)
     }
-    fetchSummary()
-  }, [apiBaseUrl, summaryId, drawerOpen])
+  
+    // ✅ 明示的に発火（ユーザーが取れたか確認）
+    if (auth.currentUser) {
+      fetchSummary()
+    } else {
+      const unsubscribe = auth.onAuthStateChanged(() => {
+        fetchSummary()
+        unsubscribe() // 初回だけ
+      })
+    }
+  }, [apiBaseUrl, summaryId])
 
   // Caseをセット.
   useEffect(() => {
@@ -188,12 +198,7 @@ export default function ChatPage() {
             <Button variant="ghost" size="sm" onClick={() => router.push("/")}> {/* 戻る */}
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h1 className="text-xl font-semibold">取り調べ室</h1>
-            {caseData && (
-              <span className="ml-4 text-sm text-gray-500">
-                Case: {caseData.caseId} / Status: {caseData.status}
-              </span>
-            )}
+            <h1 className="text-xl font-semibold">{summary ? summary.summaryName : ''}</h1>
           </div>
           <Button variant="ghost" size="icon" onClick={handleDeleteCase} title="Delete Case">
             <Trash2 className="h-5 w-5 text-red-500" />
