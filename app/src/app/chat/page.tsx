@@ -200,7 +200,8 @@ export default function ChatPage() {
         className="flex-1 flex flex-col transition-all duration-300"
         style={drawerOpen ? { width: `calc(100vw - ${drawerWidth}px)`, marginRight: `${drawerWidth}px` } : { width: "100vw" }}
       >
-        <div className="border-b px-6 py-4 flex items-center justify-between bg-white">
+        {/* ヘッダー固定 */}
+        <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button variant="ghost" size="sm" onClick={() => router.push("/")}> {/* 戻る */}
               <ArrowLeft className="h-4 w-4" />
@@ -211,6 +212,7 @@ export default function ChatPage() {
             <Trash2 className="h-5 w-5 text-red-500" />
           </Button>
         </div>
+        {/* メッセージ表示エリア（中央のみスクロール） */}
         <div className="flex-1 overflow-y-auto p-6">
           {messages.length === 0 ? (
             <div className="flex items-center justify-center h-full text-gray-400">
@@ -240,7 +242,8 @@ export default function ChatPage() {
             </>
           )}
         </div>
-        <div className="border-t p-6 bg-white flex items-center justify-between">
+        {/* 入力エリア固定 */}
+        <div className="sticky bottom-0 z-10 border-t p-6 bg-white flex items-center justify-between">
           <form onSubmit={handleSubmit} className="flex w-full space-x-2 items-center">
             <Input
               value={input}
