@@ -40,6 +40,19 @@ def generate_summary() -> summary_model.Summary:
     
     return summary
 
+def get_summary(summary_id: str) -> summary_model.Summary | None:
+    try:
+        if not summary_id:
+            raise ValueError("Summary ID must be provided")
+        
+        summary = summary_repository.get_by_summary_id(summary_id)
+        if not summary:
+            return None
+        
+        return summary
+    except Exception as e:
+        raise RuntimeError(f"Failed to retrieve summary: {e}")
+
 def get_all_summaries() -> list[summary_model.Summary]:
     try:
         summaries = summary_repository.get_all()

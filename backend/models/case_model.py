@@ -24,5 +24,5 @@ class Case(BaseModel):
     createdAt: Optional[datetime] = None
     title: Optional[str] = None
     lastUpdated: Optional[datetime] = None
-    summary_id: Optional[str] = None
+    summaryId: Optional[str] = None
     logs: Optional[List[LogEntry]] = None

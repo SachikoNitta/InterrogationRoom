@@ -32,11 +32,27 @@ def get_by_user_id(user_id: str) -> List[case_model.Case]:
     try:
         if not user_id:
             raise ValueError("User ID must be provided")
-
+        
         docs = db.collection('cases').where(field_path="userId", op_string="==", value=user_id).stream()
+        print('docs:', docs)
         return [case_model.Case(**doc.to_dict()) for doc in docs]
     except Exception as e:
             raise RuntimeError(f"Failed to get case by id: {e}")
+    
+def get_by_summary_id_and_user_id(summary_id: str, user_id: str) -> Optional[case_model.Case]:
+    """指定されたsummaryIdとuserIdのケースを取得する"""
+    try:
+        if not summary_id or not user_id:
+            raise ValueError("Summary ID and User ID must be provided")
+        
+        docs = db.collection('cases').where(field_path="summaryId", op_string="==", value=summary_id).where(field_path="userId", op_string="==", value=user_id).stream()
+        if not docs:
+            return None
+        doc = next(docs, None)
+        if doc and doc.exists:
+            return case_model.Case(**doc.to_dict())
+    except Exception as e:
+        raise RuntimeError(f"Failed to get case by summary id: {e}")
 
 def append_log(case_id: str, user_id: str, log: case_model.LogEntry):
     """指定されたcaseIdとuserIdのケースにログを追加する"""

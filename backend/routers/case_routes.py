@@ -18,13 +18,24 @@ def create_my_case(req: case_request.CreateCaseRequest, user_id: dict = Depends(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/cases/{caseId}", response_model=case_model.Case)
+@router.get("/api/cases/{case_id}", response_model=case_model.Case)
 def get_my_case_by_case_id(case_id: str, user_id: str = Depends(auth_service.get_user_id)) -> case_model.Case:
     '''指定されたcaseIdのケースを取得するAPIエンドポイント。'''
     try:
         return case_service.get_my_case_by_case_id(user_id, case_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/cases/summary/{summary_id}")   
+def get_my_case_by_summary_id(summary_id: str, user_id: str = Depends(auth_service.get_user_id)) -> case_model.Case | None:
+    '''指定されたsummaryIdのケースを取得するAPIエンドポイント。'''
+    existing = case_service.get_my_case_by_summary_id(summary_id, user_id)
+    if existing:
+        print(f"Found case with summaryId {summary_id}: {existing}")
+        return existing
+    else:
+        print(f"No case found with summaryId {summary_id}")
+        raise HTTPException(status_code=404, detail="Case not found")
 
 @router.get("/api/cases", response_model=List[case_model.Case])
 def get_my_cases(user_id: str = Depends(auth_service.get_user_id)) -> List[case_model.Case]:
@@ -34,7 +45,7 @@ def get_my_cases(user_id: str = Depends(auth_service.get_user_id)) -> List[case_
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/api/cases/{caseId}/chat")
+@router.post("/api/cases/{case_id}/chat")
 def generate_my_suspect_response(case_id: str, req: case_request.ChatRequest, user_id: str = Depends(auth_service.get_user_id)) -> StreamingResponse:
     '''指定されたcaseIdのケースに対してチャットの応答を生成するAPIエンドポイント。'''
     try:
@@ -44,7 +55,7 @@ def generate_my_suspect_response(case_id: str, req: case_request.ChatRequest, us
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/api/cases/{caseId}")
+@router.delete("/api/cases/{case_id}")
 def delete_my_case(case_id: str, user_id: str = Depends(auth_service.get_user_id)): 
     '''指定されたcaseIdのケースを削除するAPIエンドポイント。'''
     try:

@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge"
 
 export default function Dashboard() {
   const [summaries, setSummaries] = useState<any[]>([])
+  const [cases, setCases] = useState<Record<string, any>>({})
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
   const [user] = useAuthState(auth)
   const router = useRouter()
@@ -44,6 +45,34 @@ export default function Dashboard() {
       }
     }
     fetchSummaries()
+  }, [apiBaseUrl, user])
+
+  useEffect(() => {
+    const fetchCases = async () => {
+      try {
+        if (!user) return
+        const idToken = await user.getIdToken()
+        const res = await fetch(`${apiBaseUrl}/api/cases`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+        })
+        if (!res.ok) throw new Error("Failed to fetch cases")
+        const data = await res.json()
+        // 配列→summaryIdをキーにしたオブジェクトへ変換
+        const casesBySummaryId = data.reduce((acc: Record<string, any>, c: any) => {
+          acc[c.summaryId] = c
+          return acc
+        }, {})
+        console.log("Fetched cases:", casesBySummaryId)
+        setCases(casesBySummaryId)
+      } catch (e) {
+        setCases({})
+      }
+    }
+    fetchCases()
   }, [apiBaseUrl, user])
 
   return (
@@ -87,7 +116,9 @@ export default function Dashboard() {
             <Card
               key={summary.summaryId}
               className="transition-all duration-200 hover:shadow-lg hover:shadow-md cursor-pointer"
-              onClick={() => router.push(`/chat?summaryId=${summary.summaryId}`)}
+              onClick={() => {
+              router.push(`/chat?summaryId=${summary.summaryId}`)
+              }}
             >
               <div className="relative">
                 <Image

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 from fastapi.responses import StreamingResponse
 import models.case_model as case_model
 import schemas.case_request as case_request
@@ -45,6 +45,12 @@ def get_my_case_by_id(case_id: str, user_id: str)-> case_model.Case:
         return case
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.get_case_by_id: {e}")
+    
+def get_my_case_by_summary_id(summary_id: str, user_id: str) -> Optional[case_model.Case]:
+    try:
+        return case_repo.get_by_summary_id_and_user_id(summary_id, user_id)
+    except Exception as e:
+        raise RuntimeError(f"Unexpected error in services.get_case_by_summary_id: {e}")
 
 def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> StreamingResponse:
     # todo: Userのメッセージを最後に保存する.

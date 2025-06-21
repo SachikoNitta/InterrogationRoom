@@ -12,7 +12,7 @@ def create(summary: summary_model.Summary) -> summary_model.Summary:
     doc_ref.update({"summaryId": summary.summaryId})
     return summary
 
-def get_summary_by_id(summary_id: str) -> summary_model.Summary:
+def get_by_summary_id(summary_id: str) -> summary_model.Summary:
     """指定されたsummaryIdのサマリーを取得する"""
     try:
         doc = db.collection('summaries').document(summary_id).get()

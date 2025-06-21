@@ -7,69 +7,130 @@ import { Send, ArrowLeft, Trash2, StickyNote } from "lucide-react"
 import { Drawer } from "@/components/ui/Drawer"
 import { Spinner } from "@/components/ui/spinner"
 import { Case, LogEntry } from "@/types/case"
+import { useAuthState } from "react-firebase-hooks/auth"
+import { auth } from "@/lib/auth"
+import { Summary } from "@/types/summary"
+import { SummaryDrawerContent } from "@/components/SummaryDrawerContent"
 
 export default function ChatPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const summaryId = searchParams.get("summaryId") || ""
-  if (!summaryId) {
-    notFound()
-  }
   const [caseData, setCaseData] = useState<Case | null>(null)
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [summary, setSummary] = useState<string>("")
+  const [summary, setSummary] = useState<Summary | null>(null)
   const [summaryLoading, setSummaryLoading] = useState<boolean>(false)
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
   const drawerWidth = 400
 
+  // 事件の概要を取得
   useEffect(() => {
-    const fetchCase = async () => {
+    if (!drawerOpen) return
+    const fetchSummary = async () => {
+      setSummaryLoading(true)
+      setSummary(null)
       try {
-        const res = await fetch(`${apiBaseUrl}/api/cases/${caseId}`)
+        const idToken = await auth.currentUser?.getIdToken()
+        if (!idToken) {
+          notFound()
+        }
+        const res = await fetch(`${apiBaseUrl}/api/summaries/${summaryId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+        })
         if (res.ok) {
           const data = await res.json()
-          setCaseData(data)
-          if (data.logs && Array.isArray(data.logs)) {
-            if (messages.length === 0) {
-              setMessages(
-                data.logs.map((log: LogEntry) => ({
-                  role: log.role,
-                  content: log.message,
-                }))
-              )
-            }
-          } else {
-            if (messages.length === 0) {
-              setMessages([])
-            }
+          setSummary(data || "")
+        } else {
+        }
+      } catch {
+        setSummary(null)
+      }
+      setSummaryLoading(false)
+    }
+    fetchSummary()
+  }, [apiBaseUrl, summaryId, drawerOpen])
+
+  // Caseをセット.
+  useEffect(() => {
+    const fetchOrCreateCase = async () => {
+      if (!summaryId) return
+      const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) {
+        notFound()
+      }
+      // まずGETで既存ケースを取得
+      let res = await fetch(`${apiBaseUrl}/api/cases/summary/${summaryId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
+      })
+      let data = null
+      if (res.ok) {
+        data = await res.json()
+      } else {
+        // なければPOSTで新規作成
+        console.log("Case not found, creating new case")
+        res = await fetch(`${apiBaseUrl}/api/cases`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ summaryId }),
+        })
+        if (res.ok) {
+          data = await res.json()
+        }
+      }
+      if (data) {
+        setCaseData(data)
+        if (data.logs && Array.isArray(data.logs) && data.logs.length > 0) {
+          if (messages.length === 0) {
+            setMessages(
+              data.logs.map((log: LogEntry) => ({
+                role: log.role,
+                content: log.message,
+              }))
+            )
+          }
+        } else {
+          if (messages.length === 0) {
+            setMessages([])
           }
         }
-      } catch (e) {
-        console.error("Failed to fetch case data:", e)
       }
     }
-    if (caseId) fetchCase()
-  }, [caseId, apiBaseUrl, messages.length])
+    fetchOrCreateCase()
+  }, [summaryId, apiBaseUrl, messages.length])
 
+  // メッセージが更新されたときにスクロール
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  // 入力フィールドの変更を処理
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value)
   }
 
+  // メッセージの送信時の処理
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!input.trim()) return
     setMessages((prev) => [...prev, { role: "user", content: input }, { role: "model", content: "" }])
     setInput("")
     setIsLoading(true)
-    const res = await fetch(`${apiBaseUrl}/api/cases/${caseId}/chat`, {
+    const res = await fetch(`${apiBaseUrl}/api/cases/${caseData?.caseId}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: input }),
@@ -103,10 +164,11 @@ export default function ChatPage() {
     setIsLoading(false)
   }
 
+  // ケースの削除処理
   const handleDeleteCase = async () => {
-    if (!caseId) return
+    if (!caseData?.caseId) return
     if (!window.confirm("本当にこのケースを削除しますか？")) return
-    const res = await fetch(`${apiBaseUrl}/api/cases/${caseId}`, { method: "DELETE" })
+    const res = await fetch(`${apiBaseUrl}/api/cases/${caseData?.caseId}`, { method: "DELETE" })
     if (res.ok) {
       alert("ケースを削除しました")
       router.push("/")
@@ -114,27 +176,6 @@ export default function ChatPage() {
       alert("削除に失敗しました")
     }
   }
-
-  useEffect(() => {
-    if (!drawerOpen) return
-    const fetchSummary = async () => {
-      setSummaryLoading(true)
-      setSummary("")
-      try {
-        const res = await fetch(`${apiBaseUrl}/api/cases/${caseId}/summary`)
-        if (res.ok) {
-          const data = await res.json()
-          setSummary(data.summary || "")
-        } else {
-          setSummary("")
-        }
-      } catch {
-        setSummary("")
-      }
-      setSummaryLoading(false)
-    }
-    fetchSummary()
-  }, [drawerOpen, caseId, apiBaseUrl])
 
   return (
     <div className="h-full w-full flex flex-col bg-white relative">
@@ -212,7 +253,7 @@ export default function ChatPage() {
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} width={`${drawerWidth}px`} hideCloseButton>
         <h2 className="text-2xl font-bold mb-4">取り調べメモ</h2>
         <div className="mb-6 whitespace-pre-line text-gray-800 min-h-[4rem]">
-          {summaryLoading ? <Spinner size={32} /> : (summary || "この事件の概要はまだありません。")}
+          <SummaryDrawerContent summary={summary} summaryLoading={summaryLoading} />
         </div>
       </Drawer>
     </div>
