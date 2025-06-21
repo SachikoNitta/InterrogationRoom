@@ -42,6 +42,19 @@ export GOOGLE_CLOUD_PROJECT=[YOUR_PROJECT_ID]
 uvicorn main:app --reload
 ```
 
+### キーワード作成
+```
+import services.keyword_manager as km
+km.create_keyword("うどん")
+```
+
+### 概要作成
+10秒程度かかります
+```
+import services.summary_service as ss
+ss.generate_summary()
+```
+
 ---
 
 ## 5. 補足
