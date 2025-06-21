@@ -9,11 +9,15 @@ location = os.getenv("GOOGLE_CLOUD_LOCATION", 'asia-northeast1')
 
 vertexai.init(project=project_id, location=location)
 
-def get_model(model_name: str, system_instruction=str) -> GenerativeModel:
+def get_model(model_name: str, system_instruction=None) -> GenerativeModel:
     """
     指定されたモデル名とシステムインストラクションでGenerativeModelを取得する。
+    system_instructionは省略可能。
     """
-    return GenerativeModel(model_name, system_instruction=system_instruction)
+    if system_instruction is not None:
+        return GenerativeModel(model_name, system_instruction=system_instruction)
+    else:
+        return GenerativeModel(model_name)
 
 def generate_stream_response(model: GenerativeModel, contents: List[Content], on_complete: Callable[[str], None] = None) -> str:
     """
@@ -31,3 +35,31 @@ def generate_stream_response(model: GenerativeModel, contents: List[Content], on
 
     if on_complete:
         on_complete(buffer.rstrip("\n"))
+
+def generate_response(model: GenerativeModel, contents: List[Content]) -> dict:
+    """
+    指定されたモデルとコンテンツに基づいて、レスポンスを生成する。
+    """
+    response = model.generate_content(contents=contents)
+
+    if not response.candidates or len(response.candidates) == 0:
+        return {}
+    candidate = response.candidates[0]
+    if not candidate.content or not candidate.content.parts or len(candidate.content.parts) == 0:
+        return {}
+    part = candidate.content.parts[0]
+    if not part.text:
+        return {}
+    return part.text
+
+def get_part_from_text(text: str) -> Part:
+    """
+    文字列からPartオブジェクトを生成して返す
+    """
+    return Part.from_text(text)
+
+def get_content_from_role_parts(role: str, parts: list) -> Content:
+    """
+    roleとpartsからContentオブジェクトを生成して返す
+    """
+    return Content(role=role, parts=parts)

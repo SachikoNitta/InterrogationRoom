@@ -4,6 +4,7 @@ from typing import List
 import services.auth_service as auth_service
 import services.case_service as case_service
 import schemas.case_dto as case_dto
+import schemas.summary_dto as summary_dto
 import schemas.case_request as case_request
 
 router = APIRouter()
@@ -30,22 +31,6 @@ def get_cases(token: dict = Depends(auth_service.verify_id_token)) -> List[case_
     try:
         print(f"get_cases: token={token}")
         return case_service.get_my_cases(token)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/api/cases/{caseId}/summary")
-def generate_case_summary(caseId: str) -> StreamingResponse:
-    '''指定されたcaseIdのケースの概要を生成するAPIエンドポイント。'''
-    try:
-      return case_service.generate_case_summary(caseId)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get('/api/cases/{caseId}/summary')
-def get_case_summary(caseId: str) -> dict:
-    '''指定されたcaseIdのケースの概要を取得するAPIエンドポイント。'''
-    try:
-        return case_service.get_case_summary(caseId)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

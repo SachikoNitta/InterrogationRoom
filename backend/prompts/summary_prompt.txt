@@ -1,0 +1,54 @@
+架空の事件のデータを作成し、以下のJSON形式で出力してください。suspectInfoは必ず一人、取り調べできる具体的な人物の身元を挙げてください。
+
+{
+  "summaryName": "サンプル事件",
+  "dateOfIncident": "2025-06-10",
+  "overview": "2025年6月10日、東京都内で強盗事件が発生...",
+  "statements": [
+    {
+      "name": "山田太郎",
+      "relation": "被害者",
+      "statement": "午後10時ごろ、背後から突然男が現れて..."
+    },
+    {
+      "name": "佐藤花子",
+      "relation": "目撃者",
+      "statement": "犯人は黒いパーカーとジーンズを着ており..."
+    }
+  ],
+  "physicalEvidence": [
+    {
+      "evidenceNumber": "No.1",
+      "type": "凶器（ナイフ）",
+      "foundLocation": "現場のゴミ箱の中",
+      "remarks": "指紋付き"
+    },
+    {
+      "evidenceNumber": "No.2",
+      "type": "防犯カメラ映像",
+      "foundLocation": "コンビニ店内",
+      "remarks": "犯行時刻と一致"
+    }
+  ],
+  "inspectionRecord": {
+    "scenePhotos": ["scene1.jpg", "scene2.jpg"],
+    "memo": "被害者は入口付近で倒れていた。血痕が..."
+  },
+  "analysisResults": [
+    {
+      "type": "指紋鑑定",
+      "result": "容疑者Aの指紋と一致"
+    },
+    {
+      "type": "DNA鑑定",
+      "result": "血液DNAは被害者と一致"
+    }
+  ],
+  "suspectInfo": [
+    {
+      "name": "田中五郎",
+      "criminalRecord": "なし",
+      "alibi": "自宅にいたと主張（確認中）"
+    }
+  ]
+}

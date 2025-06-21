@@ -47,12 +47,12 @@ def get_by_user_id(user_id: str) -> List[case_model.Case]:
 #     db.collection('cases').document(case_id).set(case.dict(), merge=True)
 #     return case
 
-def set_summary(case_id: str, summary: str):
-    """指定されたcaseIdのケースの概要を設定する"""
-    print(f"Setting summary for case {case_id}")
+def set_summary_id(case_id: str, summary_id: str):
+    """指定されたcaseIdのケースのsummary_idを設定する"""
+    print(f"Setting summary_id for case {case_id}")
     db.collection("cases").document(case_id).update({
-        "summary": summary,
-        "lastUpdated": firestore.SERVER_TIMESTAMP 
+        "summary_id": summary_id,
+        "lastUpdated": firestore.SERVER_TIMESTAMP
     })
 
 def append_log(case_id: str, log: case_model.LogEntry):

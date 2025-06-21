@@ -8,6 +8,7 @@ import repository.case_repository as case_repo
 import services.gemini_client as gemini_client
 import services.secret_manager as secret_manager
 import services.keyword_manager as keyword_manager
+import services.prompt_service as prompt_service
 
 def create_case(token: Dict)-> case_dto.Case:
     try:
@@ -58,37 +59,6 @@ def get_case_by_id(caseId: str)-> case_dto.Case:
         return case_dto
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.get_case_by_id: {e}")
-
-def generate_case_summary(caseId: str) -> StreamingResponse:
-    try:
-        def save_summary(summary: str):
-            case_repo.set_summary(caseId, summary)
-
-        model = gemini_client.get_model("gemini-1.5-pro-002", system_instruction = secret_manager.getsecret('system_prompt_case_generator'))
-        keywords = keyword_manager.get_random_keywords(3)
-        part = gemini_client.Part.from_text('事件の概要を生成してください。以下のキーワードを含んでください。\n' + ', '.join([keyword.word for keyword in keywords]))
-        content = gemini_client.Content(role='model', parts=[part])
-        stream = gemini_client.generate_stream_response(
-            model,
-            contents=[content],
-            on_complete=save_summary
-        )
-        return StreamingResponse(stream, media_type="text/plain")
-
-    except Exception as e:
-        raise RuntimeError(f"Unexpected error in services.generate_case_summary: {e}")
-
-def get_case_summary(caseId: str):
-    try:
-        case = case_repo.get_by_case_id(caseId)
-        if not case:
-            raise Exception("Case not found")
-        summary = case.summary
-        if not summary:
-            raise Exception("Case summary not found")
-        return {"summary": summary}
-    except Exception as e:
-        raise RuntimeError(f"Unexpected error in services.get_case_summary: {e}")
 
 def generate_suspect_response(caseId: str, req: case_request.ChatRequest) -> StreamingResponse:
     try:
