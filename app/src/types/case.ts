@@ -1,15 +1,13 @@
-export interface LogEntryDto {
+export interface LogEntry {
   role: string;
   message: string;
-  createdAt: string;
 }
 
-export interface CaseDto {
+export interface Case {
   caseId: string;
   status: string;
   createdAt: string;
   lastUpdated: string;
   summary: string;
-  title?: string;
-  logs: LogEntryDto[];
+  logs: LogEntry[];
 }

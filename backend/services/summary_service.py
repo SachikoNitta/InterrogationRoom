@@ -7,7 +7,7 @@ import repository.summary_repository as summary_repository
 import json
 import utils.text_utils as text_utils
 
-def generate_summary() -> str:
+def generate_summary() -> summary_model.Summary:
     try:
         # Generate a summary using the Gemini model
         model = gemini_client.get_model("gemini-1.5-pro-002")

@@ -7,7 +7,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { auth } from "@/lib/auth"
 import { signOut } from "firebase/auth"
-import type { CaseDto } from "@/types/case"
+import type { Case } from "@/types/case"
 import { Spinner } from "@/components/ui/spinner"
 
 interface OfficeProps {
@@ -17,7 +17,7 @@ interface OfficeProps {
 }
 
 export const Office: React.FC<OfficeProps> = ({ onBackToEntrance, onClickCase, getStatusColor }) => {
-  const [cases, setCases] = useState<CaseDto[]>([])
+  const [cases, setCases] = useState<Case[]>([])
 
   // Caseデータを取得
   useEffect(() => {

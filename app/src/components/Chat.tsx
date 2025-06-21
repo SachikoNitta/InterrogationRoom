@@ -6,7 +6,7 @@ import { Send, ArrowLeft, Trash2, StickyNote } from "lucide-react"
 import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import { CaseSummaryModal } from "./CaseSummaryModal"
-import { CaseDto, LogEntryDto } from "@/types/case"
+import { Case, LogEntry } from "@/types/case"
 import { Drawer } from "@/components/ui/Drawer"
 import { Spinner } from "@/components/ui/spinner"
 
@@ -17,7 +17,7 @@ interface ChatProps {
 
 export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
   // DBから取得したCaseデータ.
-  const [caseData, setCaseData] = useState<CaseDto | null>(null)
+  const [caseData, setCaseData] = useState<Case | null>(null)
   // 画面上に表示される全てのメッセージ.
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -47,7 +47,7 @@ export const Chat: React.FC<ChatProps> = ({ caseId, onBackToEntrance }) => {
           if (data.logs && Array.isArray(data.logs)) {
             if (messages.length === 0) {
               setMessages(
-                data.logs.map((log: LogEntryDto) => ({
+                data.logs.map((log: LogEntry) => ({
                   role: log.role,
                   content: log.message,
                 })),

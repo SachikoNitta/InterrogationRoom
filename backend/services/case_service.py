@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import List, Dict
 from fastapi.responses import StreamingResponse
 import models.case_model as case_model
-import schemas.case_dto as case_dto
 import schemas.case_request as case_request
 import repository.case_repository as case_repo
 import services.gemini_client as gemini_client
@@ -10,7 +9,7 @@ import services.secret_manager as secret_manager
 import services.keyword_manager as keyword_manager
 import services.prompt_service as prompt_service
 
-def create_case(token: Dict)-> case_dto.Case:
+def create_case(token: Dict)-> case_model.Case:
     try:
         # Caseを作成する
         case = case_model.Case(
@@ -25,26 +24,19 @@ def create_case(token: Dict)-> case_dto.Case:
         # Firestoreに保存する
         case = case_repo.create(case)
 
-        # CaseDtoに変換する
-        case_dto = to_case_dto(case)
-        return case_dto
-    
+        return case
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.create_case: {e}")
 
-def get_my_cases(token: Dict) -> List[case_dto.Case]:
+def get_my_cases(token: Dict) -> List[case_model.Case]:
     try:
         # ユーザーIDからケースを取得する
         cases = case_repo.get_by_user_id(token["user_id"])
-
-        # CaseDtoに変換する
-        case_dtos = [to_case_dto(case) for case in cases]
-
-        return case_dtos
+        return cases
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.get_my_cases: {e}")
 
-def get_case_by_id(caseId: str)-> case_dto.Case:
+def get_case_by_id(caseId: str)-> case_model.Case:
     try:
         print(f"get_case_by_id: {caseId}")
         case = case_repo.get_by_case_id(caseId)
@@ -52,11 +44,7 @@ def get_case_by_id(caseId: str)-> case_dto.Case:
 
         if not case:
             raise Exception("Case not found")
-        
-        # CaseDtoに変換する
-        case_dto = to_case_dto(case)
-
-        return case_dto
+        return case
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.get_case_by_id: {e}")
 
@@ -92,17 +80,6 @@ def delete_case(caseId: str):
         case_repo.delete(caseId)
     except Exception as e:
         raise RuntimeError(f"Failed to delete case: {e}")
-
-def to_case_dto(case: case_model.Case) -> case_dto.Case:
-    return case_dto.Case(
-        caseId=case.caseId,
-        status=case.status,
-        createdAt=case.createdAt,
-        lastUpdated=case.lastUpdated,
-        summary=case.summary,
-        title=case.title,
-        logs=[case_dto.LogEntry(**log.dict()) for log in case.logs]
-    )
 
 def build_gemini_contents(summary: str = "", logs: List[case_model.LogEntry] = None, extra: str = "") -> List[gemini_client.Content]:
     """
