@@ -1,5 +1,5 @@
 from fastapi.responses import StreamingResponse
-import services.prompt_service as prompt_service
+import services.prompt_manager as prompt_manager
 import services.gemini_client as gemini_client
 import services.keyword_manager as keyword_manager
 import models.summary_model as summary_model
@@ -12,7 +12,7 @@ def generate_summary() -> summary_model.Summary:
         # Generate a summary using the Gemini model
         model = gemini_client.get_model("gemini-1.5-pro-002")
         keywords = keyword_manager.get_random_keywords(3)
-        prompt_template = prompt_service.get_prompt("summary_prompt.txt")
+        prompt_template = prompt_manager.get_prompt("summary_prompt.txt")
         prompt = prompt_template + "\nキーワード: " + ', '.join([keyword.word for keyword in keywords])
         part = gemini_client.get_part_from_text(prompt)
         content = gemini_client.get_content_from_role_parts('model', [part])

@@ -7,7 +7,7 @@ import repository.case_repository as case_repo
 import services.gemini_client as gemini_client
 import services.secret_manager as secret_manager
 import services.keyword_manager as keyword_manager
-import services.prompt_service as prompt_service
+import services.prompt_manager as prompt_manager
 
 def create_my_case(summary_id: str, user_id: str)-> case_model.Case:
     try:
@@ -69,7 +69,7 @@ def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> St
             raise Exception("Case not found")
 
         logs = case.logs if case.logs else []
-        model = gemini_client.get_model("gemini-1.5-pro-002", system_instruction = secret_manager.getsecret('system_prompt_suspect'))
+        model = gemini_client.get_model("gemini-1.5-pro-002", system_instruction = prompt_manager.get_prompt("suspect_system_prompt.txt"))
         stream = gemini_client.generate_stream_response(
             model,
             contents=build_gemini_contents(logs=logs),
