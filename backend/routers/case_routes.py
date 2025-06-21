@@ -9,10 +9,12 @@ import schemas.case_request as case_request
 router = APIRouter()
 
 @router.post("/api/cases")
-def create_my_case(user_id: str = Depends(auth_service.get_user_id)) -> case_model.Case:
+def create_my_case(req: case_request.CreateCaseRequest, user_id: dict = Depends(auth_service.get_user_id)) -> case_model.Case:
     '''新しいCaseを作成するAPIエンドポイント。'''
     try:
-        return case_service.create_my_case(user_id)
+        if not req.summaryId:
+            raise HTTPException(status_code=400, detail="Summary ID is required")
+        return case_service.create_my_case(summary_id=req.summaryId, user_id=user_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

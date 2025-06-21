@@ -9,7 +9,7 @@ import services.secret_manager as secret_manager
 import services.keyword_manager as keyword_manager
 import services.prompt_service as prompt_service
 
-def create_my_case(user_id: str)-> case_model.Case:
+def create_my_case(summary_id: str, user_id: str)-> case_model.Case:
     try:
         # Caseを作成する
         case = case_model.Case(
@@ -17,7 +17,7 @@ def create_my_case(user_id: str)-> case_model.Case:
             status=case_model.Case.STATUS_IN_PROGRESS,
             createdAt=datetime.now(),
             lastUpdated=datetime.now(),
-            summary="",
+            summaryId = summary_id,
             logs=[]
         )
 
