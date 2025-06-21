@@ -122,7 +122,7 @@ export default function Dashboard() {
             >
               <div className="relative">
                 <Image
-                  src={summary.image || "/placeholder.svg"}
+                  src={summary.image || "/images/tree.png"}
                   alt={summary.summaryName || ""}
                   width={400}
                   height={300}
