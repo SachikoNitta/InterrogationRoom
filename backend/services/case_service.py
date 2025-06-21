@@ -9,11 +9,11 @@ import services.secret_manager as secret_manager
 import services.keyword_manager as keyword_manager
 import services.prompt_service as prompt_service
 
-def create_case(token: Dict)-> case_model.Case:
+def create_my_case(user_id: str)-> case_model.Case:
     try:
         # Caseを作成する
         case = case_model.Case(
-            userId=token["user_id"],
+            userId=user_id,
             status=case_model.Case.STATUS_IN_PROGRESS,
             createdAt=datetime.now(),
             lastUpdated=datetime.now(),
@@ -28,19 +28,17 @@ def create_case(token: Dict)-> case_model.Case:
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.create_case: {e}")
 
-def get_my_cases(token: Dict) -> List[case_model.Case]:
+def get_my_cases(user_id: str) -> List[case_model.Case]:
     try:
         # ユーザーIDからケースを取得する
-        cases = case_repo.get_by_user_id(token["user_id"])
+        cases = case_repo.get_by_user_id(user_id)
         return cases
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.get_my_cases: {e}")
 
-def get_case_by_id(caseId: str)-> case_model.Case:
+def get_my_case_by_id(case_id: str, user_id: str)-> case_model.Case:
     try:
-        print(f"get_case_by_id: {caseId}")
-        case = case_repo.get_by_case_id(caseId)
-        print(f"get_case_by_id: {caseId}, case: {case}")
+        case = case_repo.get_by_case_id_and_user_id(case_id, user_id)
 
         if not case:
             raise Exception("Case not found")
@@ -48,36 +46,36 @@ def get_case_by_id(caseId: str)-> case_model.Case:
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.get_case_by_id: {e}")
 
-def generate_suspect_response(caseId: str, req: case_request.ChatRequest) -> StreamingResponse:
+def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> StreamingResponse:
+    # todo: Userのメッセージを最後に保存する.
     try:
         def save_reply(full_text: str):
             log = case_model.LogEntry(role="model", message=full_text, createdAt=datetime.now())
-            case_repo.append_log(caseId, log)
+            case_repo.append_log(case_id, user_id, log)
 
-        # Userのメッセージをログに追加
-        log = case_model.LogEntry(role="user", message=req.message, createdAt=datetime.now())
-        case_repo.append_log(caseId, log)
+        # Userのメッセージをログに保存
+        log = case_model.LogEntry(role="user", message=message, createdAt=datetime.now())
+        case_repo.append_log(case_id, user_id, log)
 
         # Caseを取得
-        case = case_repo.get_by_case_id(caseId)
+        case = case_repo.get_by_case_id_and_user_id(case_id, user_id)
         if not case:
             raise Exception("Case not found")
-                
-        summary = case.summary if case.summary else ""
+
         logs = case.logs if case.logs else []
         model = gemini_client.get_model("gemini-1.5-pro-002", system_instruction = secret_manager.getsecret('system_prompt_suspect'))
         stream = gemini_client.generate_stream_response(
             model,
-            contents=build_gemini_contents(summary, logs),
+            contents=build_gemini_contents(logs=logs),
             on_complete=save_reply
         )
         return StreamingResponse(stream, media_type="text/plain")
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.generate_suspect_response: {e}")
 
-def delete_case(caseId: str):
+def delete_my_case(case_id: str, user_id: str):
     try:
-        case_repo.delete(caseId)
+        case_repo.delete_by_case_id_and_user_id(case_id, user_id)
     except Exception as e:
         raise RuntimeError(f"Failed to delete case: {e}")
 

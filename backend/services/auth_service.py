@@ -1,9 +1,9 @@
 from fastapi import Request, HTTPException
 from firebase_admin import auth, credentials, initialize_app
 from services.secret_manager import getsecret
-from models.user_model import User
+import models.user_model as user_model
 from datetime import datetime
-from repository.user_repository import save_user, get_user
+import repository.user_repository as user_repo
 import json
 
 secret_json = getsecret('firebase-service-account')
@@ -33,20 +33,25 @@ def verify_id_token(request: Request) -> dict:
         return decoded_token
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid token")
+    
+def get_user_id(request: Request) -> str:
+    """リクエストからユーザーIDを取得するサービス関数"""
+    decoded = verify_id_token(request)
+    return decoded["uid"]
 
-def get_me_service(request: Request):
+def get_me(request: Request) -> user_model.User:
     """ユーザー情報を取得するサービス関数"""
     decoded = verify_id_token(request)
-    user = get_user(decoded["uid"])
+    user = user_repo.get_user(decoded["uid"])
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-def login_service(request: Request):
+def login(request: Request):
     """ログイン処理のサービス関数"""
     decoded = verify_id_token(request)
     user_id = decoded["uid"]
-    user_obj = User(
+    user_obj = user_model.User(
         userId=user_id,
         displayName=decoded.get("name", ""),
         email=decoded.get("email", ""),
@@ -55,7 +60,7 @@ def login_service(request: Request):
         lastLoginAt=datetime.now(),
         preferences={}
     )
-    user = save_user(user_obj)
+    user = user_repo.save_user(user_obj)
     if not user:
         raise HTTPException(status_code=500, detail="Failed to save user data")
     return {"userId": user_id}
