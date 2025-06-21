@@ -184,13 +184,23 @@ export default function ChatPage() {
   // ケースの削除処理
   const handleDeleteCase = async () => {
     if (!caseData?.caseId) return
-    if (!window.confirm("本当にこのケースを削除しますか？")) return
-    const res = await fetch(`${apiBaseUrl}/api/cases/${caseData?.caseId}`, { method: "DELETE" })
+    if (!window.confirm("取り調べデータを削除しますか？取り調べの記録（会話履歴）はすべて削除されます。")) return
+    const idToken = await auth.currentUser?.getIdToken()
+    if (!idToken) {
+      notFound()
+    }
+    const res = await fetch(`${apiBaseUrl}/api/cases/${caseData?.caseId}`, {
+      method: "DELETE",
+      headers: {
+      Authorization: `Bearer ${idToken}`,
+      "Content-Type": "application/json",
+      },
+    })
     if (res.ok) {
-      alert("ケースを削除しました")
+      alert("取り調べデータを削除しました。")
       router.push("/")
     } else {
-      alert("削除に失敗しました")
+      alert("取り調べデータの削除に失敗しました。")
     }
   }
 
