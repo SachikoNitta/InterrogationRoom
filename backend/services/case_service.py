@@ -90,18 +90,12 @@ def delete_my_case(case_id: str, user_id: str):
     except Exception as e:
         raise RuntimeError(f"Failed to delete case: {e}")
 
-def build_gemini_contents(summary: str = "", logs: List[case_model.LogEntry] = None, extra: str = "") -> List[gemini_client.Content]:
+def build_gemini_contents(logs: List[case_model.LogEntry] = None) -> List[gemini_client.Content]:
     """
     LogEntry型のリストからContent型のリストを生成する
     """
     try:
         contents = []
-
-        # 概要が空でない場合は、最初のコンテンツとして追加
-        if summary:
-            part = gemini_client.Part.from_text(summary)
-            content = gemini_client.Content(role='model', parts=[part])
-            contents.append(content)
 
         # ログエントリからコンテンツを生成
         if logs:
@@ -113,12 +107,6 @@ def build_gemini_contents(summary: str = "", logs: List[case_model.LogEntry] = N
                 part = gemini_client.Part.from_text(message)
                 content = gemini_client.Content(role=log.role, parts=[part])
                 contents.append(content)
-
-        # 追加のテキストがある場合は、最後のコンテンツとして追加
-        if extra:
-            part = gemini_client.Part.from_text(extra)
-            content = gemini_client.Content(role='model', parts=[part])
-            contents.append(content)
     except Exception as e:
         raise RuntimeError(f"Failed to build Gemini contents: {e}")
 
