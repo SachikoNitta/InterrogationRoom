@@ -44,8 +44,7 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold">Dashboard</h1>
-              <Badge variant="secondary">{summaries.length} Available</Badge>
+              <h1 className="text-2xl font-bold">Interrogatioin Room</h1>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
@@ -64,7 +63,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">事件ファイル</h2>
+          <h2 className="text-3xl font-bold mb-2">未解決事件リスト</h2>
           <p className="text-muted-foreground">取り調べを行いたい事件を選択してください。</p>
         </div>
 
