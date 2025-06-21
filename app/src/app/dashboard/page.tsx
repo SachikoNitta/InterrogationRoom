@@ -7,6 +7,7 @@ import { useAuthState } from "react-firebase-hooks/auth"
 import { auth } from "@/lib/auth"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
+import { getAuth } from "firebase/auth"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,7 +27,15 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchSummaries = async () => {
       try {
-        const res = await fetch(`${apiBaseUrl}/api/summaries`)
+        if (!user) return
+        const idToken = await user.getIdToken()
+        const res = await fetch(`${apiBaseUrl}/api/summaries`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+        })
         if (!res.ok) throw new Error("Failed to fetch summaries")
         const data = await res.json()
         setSummaries(data)
@@ -35,7 +44,7 @@ export default function Dashboard() {
       }
     }
     fetchSummaries()
-  }, [apiBaseUrl])
+  }, [apiBaseUrl, user])
 
   return (
     <div className="min-h-screen bg-background">
