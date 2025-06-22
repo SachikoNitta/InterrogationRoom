@@ -22,7 +22,6 @@ class Case(BaseModel):
     userId: Optional[str] = None
     status: Optional[str] = None,  # 'in_progress', 'confessed', 'failed'
     createdAt: Optional[datetime] = None
-    title: Optional[str] = None
     lastUpdated: Optional[datetime] = None
     summaryId: Optional[str] = None
     logs: Optional[List[LogEntry]] = None

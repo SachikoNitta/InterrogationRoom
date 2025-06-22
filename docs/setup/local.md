@@ -34,7 +34,6 @@ cd backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-export GOOGLE_CLOUD_PROJECT=[YOUR_PROJECT_ID]
 ```
 
 ### APIサーバー起動
