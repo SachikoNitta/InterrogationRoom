@@ -58,9 +58,6 @@ gcloud builds submit --config=cloudbuild-backend.yml ..
 - サイドバーのAuthentication > Sign-in method
 - Sign-in providersでGoogleをプロバイダとして有効化
 
-### Secret Managerにシステムプロンプトを登録する
-バックエンドで使用する変数をSecret Managerにします。
-
 #### Firebase Authの秘密鍵
 - サイドバーの歯車マーク > Project settings > Service accounts
 - 「Generate new private key」をクリック
@@ -68,9 +65,4 @@ gcloud builds submit --config=cloudbuild-backend.yml ..
 - 秘密鍵をSecret Managerに保存
 ```sh
 gcloud secrets create firebase-service-account --data-file=/path/to/serviceAccountKey.json
-```
-#### システムプロンプト
-- AIにチャットのシステムプロンプトとして送る内容をテキストファイルに保存
-```sh
-gcloud secrets create firebase-service-account --data-file=/path/to/prompt.txt
 ```
