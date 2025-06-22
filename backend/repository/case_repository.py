@@ -9,10 +9,8 @@ db = firestore.Client()
 def create(case=case_model.Case) -> case_model.Case:
     """新しいケースを作成し、Firestoreに保存する"""
     try:
-        doc_ref = db.collection('cases').document() 
-        doc_ref.set(case.dict())
-        case.caseId = doc_ref.id  # ドキュメントIDをcaseIdに設定
-        doc_ref.update({"caseId": case.caseId})  # DBにcaseIdを保存
+        doc_ref = db.collection('cases').document(case.caseId)
+        doc_ref.create(case.dict())
         return case
     except Exception as e:
         raise RuntimeError(f"Failed to create case: {e}")

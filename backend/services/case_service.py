@@ -12,8 +12,12 @@ import services.prompt_manager as prompt_manager
 
 def create_my_case(summary_id: str, user_id: str)-> case_model.Case:
     try:
+        # summary_idとuser_idでユニークなcase_idを生成
+        case_id = f"{summary_id}_{user_id}" 
+
         # Caseを作成する
         case = case_model.Case(
+            caseId=case_id,
             userId=user_id,
             status=case_model.Case.STATUS_IN_PROGRESS,
             createdAt=datetime.now(),
