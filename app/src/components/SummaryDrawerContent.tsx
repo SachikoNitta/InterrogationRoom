@@ -73,6 +73,55 @@ export const SummaryDrawerContent: React.FC<SummaryDrawerContentProps> = ({ summ
           </AccordionContent>
         </AccordionItem>
 
+                {/* Suspect Information */}
+                <AccordionItem value="suspects" className="border rounded-lg">
+          <AccordionTrigger className="px-4 py-3 hover:no-underline">
+            <div className="flex items-center gap-2 w-full">
+              <Shield className="w-5 h-5" />
+              <span className="font-semibold">容疑者情報</span>
+              {summary.suspectInfo?.length > 0 && (
+                <Badge variant="secondary" className="ml-auto mr-2">
+                  {summary.suspectInfo.length}名
+                </Badge>
+              )}
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-4 pb-4">
+            {summary.suspectInfo && summary.suspectInfo.length > 0 ? (
+              <Accordion type="multiple" className="space-y-2">
+                {summary.suspectInfo.map((suspect: SuspectInfo, i: number) => (
+                  <AccordionItem key={i} value={`suspect-${i}`} className="border rounded">
+                    <AccordionTrigger className="px-3 py-2 text-sm hover:no-underline">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="font-medium">{suspect.name}</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-3 pb-3 space-y-3">
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground mb-1">前科</div>
+                        <div className="text-sm bg-muted/50 p-2 rounded">{suspect.criminalRecord}</div>
+                      </div>
+
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground mb-1">アリバイ</div>
+                        <div className="text-sm leading-relaxed whitespace-pre-line bg-muted/50 p-3 rounded">
+                          {suspect.alibi}
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <Shield className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p>容疑者情報はありません。</p>
+              </div>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+
         {/* Statements */}
         <AccordionItem value="statements" className="border rounded-lg">
           <AccordionTrigger className="px-4 py-3 hover:no-underline">
@@ -216,54 +265,6 @@ export const SummaryDrawerContent: React.FC<SummaryDrawerContentProps> = ({ summ
           </AccordionContent>
         </AccordionItem>
 
-        {/* Suspect Information */}
-        <AccordionItem value="suspects" className="border rounded-lg">
-          <AccordionTrigger className="px-4 py-3 hover:no-underline">
-            <div className="flex items-center gap-2 w-full">
-              <Shield className="w-5 h-5" />
-              <span className="font-semibold">容疑者情報</span>
-              {summary.suspectInfo?.length > 0 && (
-                <Badge variant="secondary" className="ml-auto mr-2">
-                  {summary.suspectInfo.length}名
-                </Badge>
-              )}
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-4 pb-4">
-            {summary.suspectInfo && summary.suspectInfo.length > 0 ? (
-              <Accordion type="multiple" className="space-y-2">
-                {summary.suspectInfo.map((suspect: SuspectInfo, i: number) => (
-                  <AccordionItem key={i} value={`suspect-${i}`} className="border rounded">
-                    <AccordionTrigger className="px-3 py-2 text-sm hover:no-underline">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-muted-foreground" />
-                        <span className="font-medium">{suspect.name}</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-3 pb-3 space-y-3">
-                      <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-1">前科</div>
-                        <div className="text-sm bg-muted/50 p-2 rounded">{suspect.criminalRecord}</div>
-                      </div>
-
-                      <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-1">アリバイ</div>
-                        <div className="text-sm leading-relaxed whitespace-pre-line bg-muted/50 p-3 rounded">
-                          {suspect.alibi}
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            ) : (
-              <div className="text-center py-6 text-muted-foreground">
-                <Shield className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p>容疑者情報はありません。</p>
-              </div>
-            )}
-          </AccordionContent>
-        </AccordionItem>
       </Accordion>
     </div>
   )
