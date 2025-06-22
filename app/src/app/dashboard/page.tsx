@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Play, Star, LogOut } from "lucide-react"
 import { useAuthState } from "react-firebase-hooks/auth"
-import { auth } from "@/lib/auth"
+import { auth, waitForIdToken } from "@/lib/auth"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
 
@@ -27,8 +27,8 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchSummaries = async () => {
       try {
-        if (!user) return
-        const idToken = await user.getIdToken()
+        const idToken = await waitForIdToken()
+        if (!idToken) throw new Error("No user signed in")
         const res = await fetch(`${apiBaseUrl}/api/summaries`, {
           method: "GET",
           headers: {
@@ -49,8 +49,8 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchCases = async () => {
       try {
-        if (!user) return
-        const idToken = await user.getIdToken()
+        const idToken = await waitForIdToken()
+        if (!idToken) throw new Error("No user signed in")
         const res = await fetch(`${apiBaseUrl}/api/cases`, {
           method: "GET",
           headers: {

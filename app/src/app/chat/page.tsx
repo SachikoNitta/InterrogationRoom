@@ -7,7 +7,7 @@ import { Send, ArrowLeft, Trash2, StickyNote } from "lucide-react"
 import { Drawer } from "@/components/ui/Drawer"
 import { Spinner } from "@/components/ui/spinner"
 import { Case, LogEntry } from "@/types/case"
-import { auth } from "@/lib/auth"
+import { auth, waitForIdToken } from "@/lib/auth"
 import { Summary } from "@/types/summary"
 import { SummaryDrawerContent } from "@/components/SummaryDrawerContent"
 
@@ -32,12 +32,11 @@ export default function ChatPage() {
       setSummaryLoading(true)
       setSummary(null)
       try {
-        const user = auth.currentUser
-        if (!user) {
-          console.log("⏳ Waiting for Firebase user...")
-          return // 🔁 ユーザー未取得時はreturn、次のレンダリングで再実行される
+        const idToken = await waitForIdToken()
+        if (!idToken) {
+          console.error("❌ No ID token found, redirecting to not found")
+          notFound()
         }
-        const idToken = await user.getIdToken()
         const res = await fetch(`${apiBaseUrl}/api/summaries/${summaryId}`, {
           method: "GET",
           headers: {
@@ -68,14 +67,20 @@ export default function ChatPage() {
     }
   }, [apiBaseUrl, summaryId])
 
+  useEffect(() => {
+    console.log("✅ useEffect called - summaryId:", summaryId)
+  }, [summaryId])
+
   // Caseをセット.
   useEffect(() => {
     const fetchOrCreateCase = async () => {
       if (!summaryId) return
-      const idToken = await auth.currentUser?.getIdToken()
+      const idToken = await waitForIdToken()
       if (!idToken) {
+        console.error("❌ No ID token found, redirecting to not found")
         notFound()
       }
+      console.log("Using API base URL:", apiBaseUrl)
       // まずGETで既存ケースを取得
       let res = await fetch(`${apiBaseUrl}/api/cases/summary/${summaryId}`, {
         method: "GET",
@@ -102,6 +107,7 @@ export default function ChatPage() {
           data = await res.json()
         }
       }
+      console.log("Fetched or created case:", data)
       if (data) {
         setCaseData(data)
         if (data.logs && Array.isArray(data.logs) && data.logs.length > 0) {
@@ -140,10 +146,10 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, { role: "user", content: input }, { role: "model", content: "" }])
     setInput("")
     setIsLoading(true)
-    const idToken = await auth.currentUser?.getIdToken()
-      if (!idToken) {
-        notFound()
-      }
+    const idToken = await waitForIdToken()
+    if (!idToken) {
+      notFound()
+    }
     const res = await fetch(`${apiBaseUrl}/api/cases/${caseData?.caseId}/chat`, {
       method: "POST",
       headers: {
@@ -185,7 +191,7 @@ export default function ChatPage() {
   const handleDeleteCase = async () => {
     if (!caseData?.caseId) return
     if (!window.confirm("取り調べデータを削除しますか？取り調べの記録（会話履歴）はすべて削除されます。")) return
-    const idToken = await auth.currentUser?.getIdToken()
+    const idToken = waitForIdToken
     if (!idToken) {
       notFound()
     }
