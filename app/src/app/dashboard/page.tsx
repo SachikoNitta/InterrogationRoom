@@ -145,12 +145,12 @@ export default function Dashboard() {
 
                   {console.log(cases[summary.summaryId])}
                   {cases[summary.summaryId] && cases[summary.summaryId].logs?.length > 0 && (
-                    <Badge className="absolute top-2 left-2 bg-black text-white z-10" variant="secondary">
+                    <Badge className="absolute top-2 left-2 bg-black text-white" variant="secondary">
                       In Progress
                     </Badge>
                   )}
                   {summary.genre && (
-                    <Badge className="absolute top-2 right-2 bg-black/70 text-white z-10" variant="secondary">
+                    <Badge className="absolute top-2 right-2 bg-black/70 text-white" variant="secondary">
                       {summary.genre}
                     </Badge>
                   )}
