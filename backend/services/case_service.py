@@ -72,7 +72,7 @@ def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> St
         logs = case.logs if case.logs else []
         system_prompt = prompt_manager.get_prompt("suspect_system_prompt.txt")
         summary = summary_repo.get_by_summary_id(case.summaryId)
-        system_prompt += "事件の概要: " + summary.json()
+        system_prompt += "事件の概要は以下です。: " + summary.json()
         print(f"System prompt: {system_prompt}")
         model = gemini_client.get_model("gemini-1.5-pro-002", system_instruction = system_prompt)
         stream = gemini_client.generate_stream_response(
