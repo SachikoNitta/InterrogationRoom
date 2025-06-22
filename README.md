@@ -20,10 +20,9 @@
 
 操作マニュアルおよび捜査フローは、docs/ フォルダに厳重保管されています。
 
-- 🛠️ 捜査環境の準備手順書（ローカル用）：`docs/setup/local.md`
-- 🛰️ 捜査環境の展開手順書（本番用）：`docs/setup/prod.md`
+- 🛠️ 捜査環境の準備手順書：`docs/setup`
+- 🕵️‍♂️ 取り調べの実行方法：`docs/manual`
 - 🧪 技術的捜査資料：`docs/architecture.md`
-- 🎮 ゲーム進行および容疑者応答仕様：`docs/game_flow.md` 
 
 ⸻
 
