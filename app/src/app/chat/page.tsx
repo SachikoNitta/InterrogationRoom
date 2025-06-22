@@ -276,7 +276,7 @@ export default function ChatPage() {
         </div>
       </div>
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} width={`${drawerWidth}px`} hideCloseButton>
-        <h2 className="text-2xl font-bold mb-4">取り調べメモ</h2>
+        <h2 className="text-2xl font-bold mb-4">捜査資料</h2>
         <div className="mb-6 whitespace-pre-line text-gray-800 min-h-[4rem]">
           <SummaryDrawerContent summary={summary} summaryLoading={summaryLoading} />
         </div>
