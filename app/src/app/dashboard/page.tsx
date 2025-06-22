@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { Play, Star, LogOut } from 'lucide-react'
+import { Play, Star, LogOut } from "lucide-react"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { auth } from "@/lib/auth"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
-import { getAuth } from "firebase/auth"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -123,27 +122,35 @@ export default function Dashboard() {
             .map((summary) => (
               <Card
                 key={summary.summaryId}
-                className="transition-all duration-200 hover:shadow-lg hover:shadow-md cursor-pointer"
+                className="transition-all duration-200 hover:shadow-lg hover:shadow-md cursor-pointer group"
                 onClick={() => {
-                router.push(`/chat?summaryId=${summary.summaryId}`)
+                  router.push(`/chat?summaryId=${summary.summaryId}`)
                 }}
               >
-                <div className="relative">
+                <div className="relative overflow-hidden">
                   <Image
                     src={summary.image || "/images/tree.png"}
                     alt={summary.summaryName || ""}
                     width={400}
                     height={300}
-                    className="w-full h-48 object-cover rounded-t-lg"
+                    className="w-full h-48 object-cover rounded-t-lg transition-transform duration-200 group-hover:scale-105"
                   />
+
+                  {/* Hover Play Button Overlay */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-t-lg">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-full p-4 transform scale-75 group-hover:scale-100 transition-transform duration-200">
+                      <Play className="h-8 w-8 text-black fill-black" />
+                    </div>
+                  </div>
+
                   {console.log(cases[summary.summaryId])}
                   {cases[summary.summaryId] && cases[summary.summaryId].logs?.length > 0 && (
-                    <Badge className="absolute top-2 left-2 bg-black text-white" variant="secondary">
-                    In Progress
+                    <Badge className="absolute top-2 left-2 bg-black text-white z-10" variant="secondary">
+                      In Progress
                     </Badge>
                   )}
                   {summary.genre && (
-                    <Badge className="absolute top-2 right-2 bg-black/70 text-white" variant="secondary">
+                    <Badge className="absolute top-2 right-2 bg-black/70 text-white z-10" variant="secondary">
                       {summary.genre}
                     </Badge>
                   )}
@@ -162,9 +169,7 @@ export default function Dashboard() {
                 </CardHeader>
 
                 <CardContent className="pt-0">
-                  <CardDescription className="text-sm mb-4 line-clamp-3">
-                    {summary.overview}
-                  </CardDescription>
+                  <CardDescription className="text-sm mb-4 line-clamp-3">{summary.overview}</CardDescription>
                 </CardContent>
               </Card>
             ))}
