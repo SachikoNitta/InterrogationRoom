@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { Play, Star, LogOut } from "lucide-react"
+import { Play, Star, LogOut } from 'lucide-react'
 import { useAuthState } from "react-firebase-hooks/auth"
 import { auth } from "@/lib/auth"
 import { signOut } from "firebase/auth"
@@ -101,7 +101,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">未解決事件リスト</h2>
+          <h2 className="text-3xl font-bold mb-2">事件リスト</h2>
           <p className="text-muted-foreground">取り調べを行いたい事件を選択してください。</p>
         </div>
 
@@ -112,48 +112,62 @@ export default function Dashboard() {
 
         {/* Summary Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {summaries.map((summary) => (
-            <Card
-              key={summary.summaryId}
-              className="transition-all duration-200 hover:shadow-lg hover:shadow-md cursor-pointer"
-              onClick={() => {
-              router.push(`/chat?summaryId=${summary.summaryId}`)
-              }}
-            >
-              <div className="relative">
-                <Image
-                  src={summary.image || "/images/tree.png"}
-                  alt={summary.summaryName || ""}
-                  width={400}
-                  height={300}
-                  className="w-full h-48 object-cover rounded-t-lg"
-                />
-                {summary.genre && (
-                  <Badge className="absolute top-2 right-2 bg-black/70 text-white" variant="secondary">
-                    {summary.genre}
-                  </Badge>
-                )}
-              </div>
-
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">{summary.summaryName}</CardTitle>
-                  {summary.rating && (
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-medium">{summary.rating}</span>
-                    </div>
+          {summaries
+            .slice() // 新しい配列を作成
+            .sort((a, b) => {
+              const aInProgress = cases[a.summaryId] && cases[a.summaryId].logs?.length > 0
+              const bInProgress = cases[b.summaryId] && cases[b.summaryId].logs?.length > 0
+              if (aInProgress === bInProgress) return 0
+              return aInProgress ? -1 : 1
+            })
+            .map((summary) => (
+              <Card
+                key={summary.summaryId}
+                className="transition-all duration-200 hover:shadow-lg hover:shadow-md cursor-pointer"
+                onClick={() => {
+                router.push(`/chat?summaryId=${summary.summaryId}`)
+                }}
+              >
+                <div className="relative">
+                  <Image
+                    src={summary.image || "/images/tree.png"}
+                    alt={summary.summaryName || ""}
+                    width={400}
+                    height={300}
+                    className="w-full h-48 object-cover rounded-t-lg"
+                  />
+                  {console.log(cases[summary.summaryId])}
+                  {cases[summary.summaryId] && cases[summary.summaryId].logs?.length > 0 && (
+                    <Badge className="absolute top-2 left-2 bg-black text-white" variant="secondary">
+                    In Progress
+                    </Badge>
+                  )}
+                  {summary.genre && (
+                    <Badge className="absolute top-2 right-2 bg-black/70 text-white" variant="secondary">
+                      {summary.genre}
+                    </Badge>
                   )}
                 </div>
-              </CardHeader>
 
-              <CardContent className="pt-0">
-                <CardDescription className="text-sm mb-4 line-clamp-3">
-                  {summary.overview}
-                </CardDescription>
-              </CardContent>
-            </Card>
-          ))}
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl">{summary.summaryName}</CardTitle>
+                    {summary.rating && (
+                      <div className="flex items-center space-x-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-medium">{summary.rating}</span>
+                      </div>
+                    )}
+                  </div>
+                </CardHeader>
+
+                <CardContent className="pt-0">
+                  <CardDescription className="text-sm mb-4 line-clamp-3">
+                    {summary.overview}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            ))}
         </div>
       </main>
     </div>
