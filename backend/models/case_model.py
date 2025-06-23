@@ -28,3 +28,4 @@ class Case(BaseModel):
     lastUpdated: Optional[datetime] = None
     summaryId: Optional[str] = None
     logs: Optional[List[LogEntry]] = None
+    assistantLogs: Optional[List[LogEntry]] = None

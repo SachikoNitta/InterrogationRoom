@@ -64,6 +64,19 @@ def append_log(case_id: str, user_id: str, log: case_model.LogEntry):
         })
     except Exception as e:
         raise RuntimeError(f"Failed to append log to case: {e}")
+    
+def append_assistant_log(case_id: str, user_id: str, log: case_model.LogEntry):
+    """指定されたcaseIdのケースにログを追加する"""
+    try:
+        doc_ref = db.collection('cases').document(case_id)
+
+        log_entry = log.dict()
+
+        doc_ref.update({
+            "assistantLogs": firestore.ArrayUnion([log_entry]),
+        })
+    except Exception as e:
+        raise RuntimeError(f"Failed to append assistant log to case: {e}")
 
 def delete_by_case_id_and_user_id(case_id: str, user_id: str):
     """指定されたcaseIdとuserIdのケースを削除する"""

@@ -58,6 +58,18 @@ def generate_my_suspect_response(case_id: str, req: case_request.ChatRequest, us
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/api/cases/{case_id}/chat/assistant")
+def generate_my_suspect_response(case_id: str, req: case_request.ChatRequest, user_id: str = Depends(auth_service.get_user_id)) -> StreamingResponse:
+    '''指定されたcaseIdのケースに対して新米刑事のチャットの応答を生成するAPIエンドポイント。'''
+    try:
+        if not req.message:
+            raise HTTPException(status_code=400, detail="Message cannot be empty")
+        return case_service.generate_my_assistant_response(case_id, req.message, user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+
 @router.delete("/api/cases/{case_id}")
 def delete_my_case(case_id: str, user_id: str = Depends(auth_service.get_user_id)): 
     '''指定されたcaseIdのケースを削除するAPIエンドポイント。'''

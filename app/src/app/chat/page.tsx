@@ -23,6 +23,7 @@ export default function ChatPage() {
   const [drawerOpen, setDrawerOpen] = useState(true)
   const [summary, setSummary] = useState<Summary | null>(null)
   const [summaryLoading, setSummaryLoading] = useState<boolean>(false)
+  const [recipient, setRecipient] = useState<"suspect" | "assistant">("suspect")
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
   const drawerWidth = 400
 
@@ -110,24 +111,36 @@ export default function ChatPage() {
       console.log("Fetched or created case:", data)
       if (data) {
         setCaseData(data)
-        if (data.logs && Array.isArray(data.logs) && data.logs.length > 0) {
-          if (messages.length === 0) {
-            setMessages(
-              data.logs.map((log: LogEntry) => ({
-                role: log.role,
-                content: log.message,
-              }))
-            )
-          }
-        } else {
-          if (messages.length === 0) {
-            setMessages([])
-          }
-        }
+        // setMessagesはここで呼ばない
       }
     }
     fetchOrCreateCase()
-  }, [summaryId, apiBaseUrl, messages.length])
+  }, [summaryId, apiBaseUrl])
+
+  // recipientまたはcaseDataが変わったときにmessagesを切り替える
+  useEffect(() => {
+    if (!caseData) {
+      setMessages([])
+      return
+    }
+    if (recipient === "assistant" && Array.isArray((caseData as any).assistantLogs)) {
+      setMessages(
+        (caseData as any).assistantLogs.map((log: LogEntry) => ({
+          role: log.role,
+          content: log.message,
+        }))
+      )
+    } else if (recipient === "suspect" && Array.isArray(caseData.logs)) {
+      setMessages(
+        caseData.logs.map((log: LogEntry) => ({
+          role: log.role,
+          content: log.message,
+        }))
+      )
+    } else {
+      setMessages([])
+    }
+  }, [recipient, caseData])
 
   // メッセージが更新されたときにスクロール
   useEffect(() => {
@@ -150,13 +163,18 @@ export default function ChatPage() {
     if (!idToken) {
       notFound()
     }
-    const res = await fetch(`${apiBaseUrl}/api/cases/${caseData?.caseId}/chat`, {
+    // 送信先によってエンドポイントを切り替え
+    let endpoint = `${apiBaseUrl}/api/cases/${caseData?.caseId}/chat`
+    if (recipient === "assistant") {
+      endpoint = `${apiBaseUrl}/api/cases/${caseData?.caseId}/chat/assistant`
+    }
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${idToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message: input }),
+      body: JSON.stringify({ message: input, recipient }),
     })
     if (!res.body) return
     const reader = res.body.getReader()
@@ -259,7 +277,26 @@ export default function ChatPage() {
           )}
         </div>
         {/* 入力エリア固定 */}
-        <div className="sticky bottom-0 z-10 border-t p-6 bg-white flex items-center justify-between">
+        <div className="sticky bottom-0 z-10 border-t p-6 bg-white flex flex-col items-stretch">
+          {/* 送信先切り替えボタン */}
+          <div className="flex mb-2 gap-2 self-end justify-end">
+            <Button
+              type="button"
+              variant={recipient === "suspect" ? "default" : "outline"}
+              onClick={() => setRecipient("suspect")}
+              size="sm"
+            >
+              容疑者
+            </Button>
+            <Button
+              type="button"
+              variant={recipient === "assistant" ? "default" : "outline"}
+              onClick={() => setRecipient("assistant")}
+              size="sm"
+            >
+              新米刑事
+            </Button>
+          </div>
           <form onSubmit={handleSubmit} className="flex w-full space-x-2 items-center">
             <Input
               value={input}

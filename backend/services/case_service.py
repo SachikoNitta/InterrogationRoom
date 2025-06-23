@@ -118,6 +118,47 @@ def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> St
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.generate_my_suspect_response: {e}")
 
+def generate_my_assistant_response(case_id: str, message: str, user_id: str) -> StreamingResponse:
+    """指定されたcaseIdのケースに対してチャットの応答を生成する関数"""
+    # todo: Userのメッセージを最後に保存する.
+    try:
+        def save_reply(full_text: str, token_usage_input: int, token_usage_output: int, token_usage_total: int):
+            """全てのレスポンスが完了した後に呼び出されるコールバック関数"""
+            # Caseを更新
+            token_usage = case_model.TokenUsage(
+                totalTokens=token_usage_total,
+                inputTokens=token_usage_input,
+                outputTokens=token_usage_output
+            )
+            print(f"Token usage: {token_usage.json()}")
+            log = case_model.LogEntry(role="model", message=full_text, createdAt=datetime.now(), tokenUsage = token_usage)
+            case_repo.append_assistant_log(case_id, user_id, log)
+
+        # Userのメッセージをログに保存
+        log = case_model.LogEntry(role="user", message=message, createdAt=datetime.now())
+        case_repo.append_assistant_log(case_id, user_id, log)
+
+        # Caseを取得
+        case = case_repo.get_by_case_id_and_user_id(case_id, user_id)
+        if not case:
+            raise Exception("Case not found")
+
+        logs = case.assistantLogs if case.assistantLogs else []
+        system_prompt = prompt_manager.get_prompt("assistant_system_prompt.txt")
+        summary = summary_repo.get_by_summary_id(case.summaryId)
+        system_prompt += "事件の概要は以下です。: " + summary.json()
+        print(f"System prompt: {system_prompt}")
+        model = gemini_client.get_model("gemini-1.5-pro-002", system_instruction = system_prompt)
+        stream = gemini_client.generate_stream_response(
+            model,
+            contents=build_gemini_contents(logs=logs),
+            on_complete=save_reply
+        )
+        return StreamingResponse(stream, media_type="text/plain")
+    except Exception as e:
+        raise RuntimeError(f"Unexpected error in services.generate_my_suspect_response: {e}")
+
+
 def build_gemini_contents(logs: List[case_model.LogEntry] = None) -> List[gemini_client.Content]:
     """LogEntry型のリストからContent型のリストを生成する"""
     try:
