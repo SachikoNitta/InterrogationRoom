@@ -1,13 +1,10 @@
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import List, Optional
 from fastapi.responses import StreamingResponse
 import models.case_model as case_model
-import schemas.case_request as case_request
 import repository.case_repository as case_repo
 import repository.summary_repository as summary_repo
 import services.gemini_client as gemini_client
-import services.secret_manager as secret_manager
-import services.keyword_manager as keyword_manager
 import services.prompt_manager as prompt_manager
 
 def create_my_case(summary_id: str, user_id: str)-> case_model.Case:
