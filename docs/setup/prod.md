@@ -58,7 +58,7 @@ gcloud builds submit --config=cloudbuild-backend.yml ..
 - サイドバーのAuthentication > Sign-in method
 - Sign-in providersでGoogleをプロバイダとして有効化
 
-#### Firebase Authの秘密鍵
+### Firebase Authenticationの秘密鍵をSecret Managerにアップロード
 - サイドバーの歯車マーク > Project settings > Service accounts
 - 「Generate new private key」をクリック
 - 秘密鍵をダウンロード
@@ -66,3 +66,9 @@ gcloud builds submit --config=cloudbuild-backend.yml ..
 ```sh
 gcloud secrets create firebase-service-account --data-file=/path/to/serviceAccountKey.json
 ```
+
+### Firestoreのインデックスを作成
+- `(default)`データベースを開く
+- 以下のインデックスを作成
+    - `cases`コレクションの、`userId`と`summaryId`の複合インデックス
+    - `cases`コレクションの、`userId`の単一インデックス
