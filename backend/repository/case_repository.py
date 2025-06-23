@@ -57,13 +57,10 @@ def append_log(case_id: str, user_id: str, log: case_model.LogEntry):
     try:
         doc_ref = db.collection('cases').document(case_id)
 
-        log_entry = {
-            "role": log.role,
-            "message": log.message,
-            "createdAt": log.createdAt.isoformat() if log.createdAt else None
-        }
+        log_entry = log.dict()
+
         doc_ref.update({
-            "logs": firestore.ArrayUnion([log_entry])
+            "logs": firestore.ArrayUnion([log_entry]),
         })
     except Exception as e:
         raise RuntimeError(f"Failed to append log to case: {e}")

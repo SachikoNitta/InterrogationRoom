@@ -7,22 +7,35 @@ import repository.summary_repository as summary_repo
 import services.gemini_client as gemini_client
 import services.prompt_manager as prompt_manager
 
-def create_my_case(summary_id: str, user_id: str)-> case_model.Case:
-    """新しいケースを作成する関数"""
-    try:
-        # summary_idとuser_idでユニークなcase_idを生成
-        case_id = f"{summary_id}_{user_id}" 
+def get_case_id(summary_id: str, user_id: str) -> str:
+    """ケースIDを生成する関数"""
+    return f"{summary_id}_{user_id}"
 
-        # Caseを作成する
+def get_default_case(user_id: str, summary_id: str) -> case_model.Case:
+    """デフォルトのケースを取得する関数"""
+    try:
+        case_id = get_case_id(summary_id, user_id)
+
+        # デフォルトのケースを作成
         case = case_model.Case(
             caseId=case_id,
             userId=user_id,
             status=case_model.Case.STATUS_IN_PROGRESS,
             createdAt=datetime.now(),
             lastUpdated=datetime.now(),
-            summaryId = summary_id,
-            logs=[]
+            summaryId=summary_id,
+            logs=[],
+            tokenUsage=case_model.TokenUsage(totalTokens=0, inputTokens=0, outputTokens=0)
         )
+        return case
+    except Exception as e:
+        raise RuntimeError(f"Unexpected error in services.get_default_case: {e}")
+
+def create_my_case(summary_id: str, user_id: str)-> case_model.Case:
+    """新しいケースを作成する関数"""
+    try:
+        # Caseを作成する
+        case = get_default_case(user_id, summary_id)
 
         # Firestoreに保存する
         case = case_repo.create(case)
@@ -62,8 +75,16 @@ def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> St
     """指定されたcaseIdのケースに対してチャットの応答を生成する関数"""
     # todo: Userのメッセージを最後に保存する.
     try:
-        def save_reply(full_text: str):
-            log = case_model.LogEntry(role="model", message=full_text, createdAt=datetime.now())
+        def save_reply(full_text: str, token_usage_input: int, token_usage_output: int, token_usage_total: int):
+            """全てのレスポンスが完了した後に呼び出されるコールバック関数"""
+            # Caseを更新
+            token_usage = case_model.TokenUsage(
+                totalTokens=token_usage_total,
+                inputTokens=token_usage_input,
+                outputTokens=token_usage_output
+            )
+            print(f"Token usage: {token_usage.json()}")
+            log = case_model.LogEntry(role="model", message=full_text, createdAt=datetime.now(), tokenUsage = token_usage)
             case_repo.append_log(case_id, user_id, log)
 
         # Userのメッセージをログに保存
