@@ -70,6 +70,13 @@ def get_my_case_by_summary_id(summary_id: str, user_id: str) -> Optional[case_mo
         return case_repo.get_by_summary_id_and_user_id(summary_id, user_id)
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.get_case_by_summary_id: {e}")
+    
+def delete_my_case(case_id: str, user_id: str):
+    """指定されたcaseIdのケースを削除する関数"""
+    try:
+        case_repo.delete_by_case_id_and_user_id(case_id, user_id)
+    except Exception as e:
+        raise RuntimeError(f"Failed to delete case: {e}")
 
 def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> StreamingResponse:
     """指定されたcaseIdのケースに対してチャットの応答を生成する関数"""
@@ -110,13 +117,6 @@ def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> St
         return StreamingResponse(stream, media_type="text/plain")
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.generate_my_suspect_response: {e}")
-
-def delete_my_case(case_id: str, user_id: str):
-    """指定されたcaseIdのケースを削除する関数"""
-    try:
-        case_repo.delete_by_case_id_and_user_id(case_id, user_id)
-    except Exception as e:
-        raise RuntimeError(f"Failed to delete case: {e}")
 
 def build_gemini_contents(logs: List[case_model.LogEntry] = None) -> List[gemini_client.Content]:
     """LogEntry型のリストからContent型のリストを生成する"""
