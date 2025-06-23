@@ -8,6 +8,7 @@ import services.gemini_client as gemini_client
 import services.prompt_manager as prompt_manager
 
 def create_my_case(summary_id: str, user_id: str)-> case_model.Case:
+    """新しいケースを作成する関数"""
     try:
         # summary_idとuser_idでユニークなcase_idを生成
         case_id = f"{summary_id}_{user_id}" 
@@ -31,6 +32,7 @@ def create_my_case(summary_id: str, user_id: str)-> case_model.Case:
         raise RuntimeError(f"Unexpected error in services.create_case: {e}")
 
 def get_my_cases(user_id: str) -> List[case_model.Case]:
+    """現在のユーザーのケース一覧を取得する関数"""
     try:
         # ユーザーIDからケースを取得する
         cases = case_repo.get_by_user_id(user_id)
@@ -39,6 +41,7 @@ def get_my_cases(user_id: str) -> List[case_model.Case]:
         raise RuntimeError(f"Unexpected error in services.get_my_cases: {e}")
 
 def get_my_case_by_id(case_id: str, user_id: str)-> case_model.Case:
+    """指定されたcaseIdのケースを取得する関数"""
     try:
         case = case_repo.get_by_case_id_and_user_id(case_id, user_id)
 
@@ -49,12 +52,14 @@ def get_my_case_by_id(case_id: str, user_id: str)-> case_model.Case:
         raise RuntimeError(f"Unexpected error in services.get_case_by_id: {e}")
     
 def get_my_case_by_summary_id(summary_id: str, user_id: str) -> Optional[case_model.Case]:
+    """指定されたsummaryIdのケースを取得する関数"""
     try:
         return case_repo.get_by_summary_id_and_user_id(summary_id, user_id)
     except Exception as e:
         raise RuntimeError(f"Unexpected error in services.get_case_by_summary_id: {e}")
 
 def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> StreamingResponse:
+    """指定されたcaseIdのケースに対してチャットの応答を生成する関数"""
     # todo: Userのメッセージを最後に保存する.
     try:
         def save_reply(full_text: str):
@@ -86,15 +91,14 @@ def generate_my_suspect_response(case_id: str, message: str, user_id: str) -> St
         raise RuntimeError(f"Unexpected error in services.generate_my_suspect_response: {e}")
 
 def delete_my_case(case_id: str, user_id: str):
+    """指定されたcaseIdのケースを削除する関数"""
     try:
         case_repo.delete_by_case_id_and_user_id(case_id, user_id)
     except Exception as e:
         raise RuntimeError(f"Failed to delete case: {e}")
 
 def build_gemini_contents(logs: List[case_model.LogEntry] = None) -> List[gemini_client.Content]:
-    """
-    LogEntry型のリストからContent型のリストを生成する
-    """
+    """LogEntry型のリストからContent型のリストを生成する"""
     try:
         contents = []
 

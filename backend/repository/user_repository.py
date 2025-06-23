@@ -6,6 +6,7 @@ from models.user_model import User
 db = firestore.Client()
 
 def get_user(user_id: str) -> Optional[User]:
+    """指定されたuserIdのユーザーを取得する"""
     user_doc = db.collection("users").document(user_id).get()
     existing = user_doc.get()
     if existing.exists:
@@ -13,6 +14,7 @@ def get_user(user_id: str) -> Optional[User]:
     return None
 
 def save_user(user: User) -> User:
+    """ユーザー情報をFirestoreに保存する"""
     user_id = user.userId
     user_doc = db.collection("users").document(user_id)
     existing = user_doc.get()

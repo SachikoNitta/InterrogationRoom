@@ -11,5 +11,6 @@ def get_me(request: Request):
 
 @router.post("/api/auth/login")
 def login(request: Request):
+    """ ログインエンドポイント """
     return auth_service.login(request)
 

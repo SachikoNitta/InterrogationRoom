@@ -8,6 +8,7 @@ import json
 import utils.text_utils as text_utils
 
 def generate_summary() -> summary_model.Summary:
+    """ケースの要約を生成する関数"""
     try:
         # Generate a summary using the Gemini model
         model = gemini_client.get_model("gemini-1.5-pro-002")
@@ -41,6 +42,7 @@ def generate_summary() -> summary_model.Summary:
     return summary
 
 def get_summary(summary_id: str) -> summary_model.Summary | None:
+    """指定されたsummaryIdのサマリーを取得する関数"""
     try:
         if not summary_id:
             raise ValueError("Summary ID must be provided")
@@ -54,6 +56,7 @@ def get_summary(summary_id: str) -> summary_model.Summary | None:
         raise RuntimeError(f"Failed to retrieve summary: {e}")
 
 def get_all_summaries() -> list[summary_model.Summary]:
+    """全てのサマリーを取得する関数"""
     try:
         summaries = summary_repository.get_all()
         if not summaries:
