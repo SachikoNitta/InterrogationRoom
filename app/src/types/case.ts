@@ -10,4 +10,5 @@ export interface Case {
   lastUpdated: string;
   summary: string;
   logs: LogEntry[];
+  assistantLogs: LogEntry[];
 }

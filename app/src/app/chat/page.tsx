@@ -29,9 +29,16 @@ export default function ChatPage() {
 
   // 事件の概要を取得
   useEffect(() => {
+
+    // 概要をフェッチ.
     const fetchSummary = async () => {
+      // 概要をロード中にする.
       setSummaryLoading(true)
+
+      // 概要をリセット.
       setSummary(null)
+
+      // 概要を取得する.
       try {
         const idToken = await waitForIdToken()
         if (!idToken) {
@@ -53,11 +60,13 @@ export default function ChatPage() {
         console.error("❌ Failed to fetch summary", err)
         setSummary(null)
       } finally {
+        // 概要のロードを終了.
         setSummaryLoading(false)
       }
     }
   
     // ✅ 明示的に発火（ユーザーが取れたか確認）
+    // いらない？
     if (auth.currentUser) {
       fetchSummary()
     } else {
@@ -66,8 +75,10 @@ export default function ChatPage() {
         unsubscribe() // 初回だけ
       })
     }
+    
   }, [apiBaseUrl, summaryId])
 
+  // リロード時にメッセージを更新するために必要？
   useEffect(() => {
     console.log("✅ useEffect called - summaryId:", summaryId)
   }, [summaryId])
@@ -75,28 +86,31 @@ export default function ChatPage() {
   // Caseをセット.
   useEffect(() => {
     const fetchOrCreateCase = async () => {
+      // 概要がセットされていない場合は何もしない.
       if (!summaryId) return
+
+      // ユーザー情報が取得できない場合は何もしない.
       const idToken = await waitForIdToken()
       if (!idToken) {
         console.error("❌ No ID token found, redirecting to not found")
         notFound()
       }
-      console.log("Using API base URL:", apiBaseUrl)
-      // まずGETで既存ケースを取得
-      let res = await fetch(`${apiBaseUrl}/api/cases/summary/${summaryId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          "Content-Type": "application/json",
-        },
-      })
-      let data = null
-      if (res.ok) {
-        data = await res.json()
-      } else {
-        // なければPOSTで新規作成
+
+      // 既存Caseを取得
+      const fetchCase = async () => {
+        return await fetch(`${apiBaseUrl}/api/cases/summary/${summaryId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+        })
+      }
+
+      // Caseを新規作成
+      const createCase = async () => {
         console.log("Case not found, creating new case")
-        res = await fetch(`${apiBaseUrl}/api/cases`, {
+        return await fetch(`${apiBaseUrl}/api/cases`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -104,32 +118,52 @@ export default function ChatPage() {
           },
           body: JSON.stringify({ summaryId }),
         })
+      }
+
+      // Caseを取得もしくは新規作成.
+      const getCaseData = async () => {
+        let data = null
+        let res = null
+
+        res = await fetchCase()
+        if (!res.ok) {
+          res = await createCase()
+        }
+
         if (res.ok) {
           data = await res.json()
         }
-      }
-      console.log("Fetched or created case:", data)
-      if (data) {
-        setCaseData(data)
-        // setMessagesはここで呼ばない
-      }
+
+        // Caseをセット.
+        if (data) {
+          setCaseData(data)
+        }
+
+      }      
+      await getCaseData()
+      // setMessagesはここで呼ばない
+
     }
     fetchOrCreateCase()
   }, [summaryId, apiBaseUrl])
 
   // recipientまたはcaseDataが変わったときにmessagesを切り替える
   useEffect(() => {
+    // Caseがない場合は何もしない.
     if (!caseData) {
       setMessages([])
       return
     }
+
+    // 新米刑事の場合.
     if (recipient === "assistant" && Array.isArray((caseData as any).assistantLogs)) {
       setMessages(
-        (caseData as any).assistantLogs.map((log: LogEntry) => ({
+        (caseData as Case).assistantLogs.map((log: LogEntry) => ({
           role: log.role,
           content: log.message,
         }))
       )
+    // 容疑者の場合.
     } else if (recipient === "suspect" && Array.isArray(caseData.logs)) {
       setMessages(
         caseData.logs.map((log: LogEntry) => ({
@@ -163,11 +197,17 @@ export default function ChatPage() {
     if (!idToken) {
       notFound()
     }
+
     // 送信先によってエンドポイントを切り替え
-    let endpoint = `${apiBaseUrl}/api/cases/${caseData?.caseId}/chat`
-    if (recipient === "assistant") {
-      endpoint = `${apiBaseUrl}/api/cases/${caseData?.caseId}/chat/assistant`
+    const geEndpoint = () => {
+      if (recipient === "assistant") {
+      return `${apiBaseUrl}/api/cases/${caseData?.caseId}/chat/assistant`
+      }
+      return `${apiBaseUrl}/api/cases/${caseData?.caseId}/chat`
     }
+    const endpoint = geEndpoint()
+
+    // チャットを送信
     const res = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -208,11 +248,15 @@ export default function ChatPage() {
   // ケースの削除処理
   const handleDeleteCase = async () => {
     if (!caseData?.caseId) return
-    if (!window.confirm("取り調べデータを削除しますか？取り調べの記録（会話履歴）はすべて削除されます。")) return
+    if (!window.confirm("取り調べデータを削除しますか？すべての会話履歴は削除されます。")) return
+
+    // ユーザーが取得できない場合は何もしない.
     const idToken = waitForIdToken
     if (!idToken) {
       notFound()
     }
+
+    // 削除リクエストを送信.
     const res = await fetch(`${apiBaseUrl}/api/cases/${caseData?.caseId}`, {
       method: "DELETE",
       headers: {
@@ -318,7 +362,7 @@ export default function ChatPage() {
           </form>
         </div>
       </div>
-      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} width={`${drawerWidth}px`} hideCloseButton>
+      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} width={`${drawerWidth}px`}>
         <h2 className="text-2xl font-bold mb-4">捜査資料</h2>
         <div className="mb-6 whitespace-pre-line text-gray-800 min-h-[4rem]">
           <SummaryDrawerContent summary={summary} summaryLoading={summaryLoading} />
