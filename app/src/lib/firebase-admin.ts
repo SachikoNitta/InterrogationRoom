@@ -1,5 +1,6 @@
 import { getApps, initializeApp, cert, getApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
 import { getSecret } from './secret-manager';
 
 // Firebase Admin SDK (Server-side only)
@@ -80,3 +81,4 @@ function initializeAdminSDKSync() {
 
 export const adminApp = initializeAdminSDKSync();
 export const adminAuth = getAuth(adminApp);
+export const adminDB = getFirestore(adminApp);

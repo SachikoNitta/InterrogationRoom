@@ -20,6 +20,7 @@ This directory contains comprehensive setup guides for the Interrogation Room ap
    ./infra/setup-service-account.sh
    ./infra/setup-secrets.sh
    ./infra/setup-firebase-auth-secrets.sh
+   ./infra/setup-admin-users.sh
    ./infra/setup-cloudbuild-permissions.sh
    ```
 
@@ -45,6 +46,7 @@ This directory contains comprehensive setup guides for the Interrogation Room ap
 - [ ] Service account created (`./infra/setup-service-account.sh`)
 - [ ] Secrets stored in Secret Manager (`./infra/setup-secrets.sh`)
 - [ ] Firebase authentication configured (`./infra/setup-firebase-auth-secrets.sh`)
+- [ ] Admin users configured (`./infra/setup-admin-users.sh`)
 - [ ] Cloud Build permissions configured (`./infra/setup-cloudbuild-permissions.sh`)
 
 ### Development Environment
@@ -56,6 +58,8 @@ This directory contains comprehensive setup guides for the Interrogation Room ap
 ### Production Deployment
 - [ ] Application deployed to Cloud Run
 - [ ] Firebase authentication configured
+- [ ] Admin users initialized (`./init-admin.sh`)
+- [ ] Admin access tested (`/admin` page)
 - [ ] Domain configured (if using custom domain)
 - [ ] Monitoring and logging set up
 
@@ -63,8 +67,9 @@ This directory contains comprehensive setup guides for the Interrogation Room ap
 
 - [Architecture Overview](../architecture.md)
 - [User Manual](../manual/user.md)
-- [Admin Manual](../manual/admin.md)
+- [**Admin Manual**](../manual/admin.md) - 管理者機能の詳細ガイド
 - [Security Configuration](../../SECURITY.md)
+- [Infrastructure Setup Details](./infrastructure.md)
 
 ## 🆘 Need Help?
 

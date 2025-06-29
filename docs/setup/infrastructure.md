@@ -14,6 +14,7 @@ The `/infra` directory contains all infrastructure setup and deployment scripts:
 | `setup-secrets.sh` | Stores Firebase configuration in Google Cloud Secret Manager | **First-time setup only** | ✅ Required |
 | `setup-cloudbuild-permissions.sh` | Grants Cloud Build service account access to Secret Manager | **First-time setup only** | ✅ Required |
 | `setup-firebase-auth-secrets.sh` | Interactive setup for Firebase Admin SDK credentials in Secret Manager | **First-time setup only** | ✅ Required |
+| `setup-admin-users.sh` | Configure admin users in Secret Manager for role-based access control | **First-time setup only** | ✅ Required |
 
 ### 🚀 **Deployment Files (Use Every Deploy)**
 
@@ -106,7 +107,25 @@ Setup Firebase Admin SDK authentication using Secret Manager:
 - Stores credentials securely in Secret Manager
 - Grants proper access permissions
 
-### Step 4: Cloud Build Permissions
+### Step 4: Admin Users Setup
+
+Configure admin users using Secret Manager for secure role-based access control:
+
+```bash
+./infra/setup-admin-users.sh
+```
+
+**What it does:**
+- Prompts for admin email addresses (comma-separated)
+- Stores admin emails securely in Secret Manager as `admin-emails` secret
+- Grants proper access permissions to Cloud Run and Cloud Build service accounts
+- Provides fallback to environment variables for development
+
+**Required Information:**
+- Admin email addresses (e.g., `admin@company.com,manager@company.com`)
+- These users will have access to `/admin` page for keyword and summary management
+
+### Step 5: Cloud Build Permissions
 
 Grants Cloud Build service account access to retrieve secrets during deployment:
 
@@ -210,6 +229,7 @@ gcloud run services list --filter="metadata.name:interrogation-app"
 ./infra/setup-service-account.sh
 ./infra/setup-secrets.sh
 ./infra/setup-firebase-auth-secrets.sh
+./infra/setup-admin-users.sh
 ./infra/setup-cloudbuild-permissions.sh
 ```
 
@@ -218,13 +238,24 @@ gcloud run services list --filter="metadata.name:interrogation-app"
 gcloud builds submit --config=infra/cloudbuild-frontend.yml
 ```
 
+### Admin Initialization (After First Deployment)
+```bash
+./init-admin.sh
+```
+
+**Note**: Run this once after your first deployment to initialize admin user permissions from Secret Manager.
+
 ### Secret Updates
 ```bash
 # Update a secret
 echo -n "new-value" | gcloud secrets versions add SECRET_NAME --data-file=-
 
-# Then redeploy
+# Update admin users
+echo -n "admin1@company.com,admin2@company.com" | gcloud secrets versions add admin-emails --data-file=-
+
+# Then redeploy and reinitialize
 gcloud builds submit --config=infra/cloudbuild-frontend.yml
+./init-admin.sh
 ```
 
 ---

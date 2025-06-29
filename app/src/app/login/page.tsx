@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 export default function LoginPage() {
   const { user, signIn, loading } = useAuth()
   const router = useRouter()

@@ -11,6 +11,9 @@ import { auth, waitForIdToken } from "@/lib/auth"
 import { Summary } from "@/types/summary"
 import { SummaryDrawerContent } from "@/components/SummaryDrawerContent"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 function ChatPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -67,9 +70,9 @@ function ChatPageContent() {
   
     // ✅ 明示的に発火（ユーザーが取れたか確認）
     // いらない？
-    if (auth.currentUser) {
+    if (auth && auth.currentUser) {
       fetchSummary()
-    } else {
+    } else if (auth) {
       const unsubscribe = auth.onAuthStateChanged(() => {
         fetchSummary()
         unsubscribe() // 初回だけ

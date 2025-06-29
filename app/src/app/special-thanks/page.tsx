@@ -16,6 +16,9 @@ const creditSections = [
   },
 ]
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 export default function SpecialThanksPage() {
   const [showContent, setShowContent] = useState(false)
 

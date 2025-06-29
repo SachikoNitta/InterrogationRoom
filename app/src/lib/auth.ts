@@ -1,14 +1,23 @@
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { app } from "./firebase";
 
-export const auth = getAuth(app);
+// Only initialize auth if app is available (client-side)
+export const auth = app ? getAuth(app) : null;
 export const provider = new GoogleAuthProvider();
 
 export function signInWithGoogle() {
+  if (!auth) {
+    throw new Error('Firebase auth not initialized');
+  }
   return signInWithPopup(auth, provider);
 }
 
 export const waitForIdToken = async (maxRetries = 10, delay = 500): Promise<string | null> => {
+  if (!auth) {
+    console.error("❌ Firebase auth not initialized");
+    return null;
+  }
+  
   let retries = 0
   while (retries < maxRetries) {
     const user = auth.currentUser

@@ -1,13 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Disable static optimization for pages that use Firebase
+  // Force dynamic rendering for all pages (CSR approach)
   experimental: {
-    // Force dynamic rendering to avoid build-time Firebase issues
     forceSwcTransforms: true,
   },
-  // Ensure client-side rendering for Firebase-dependent pages
+  // Optimize for standalone deployment
+  output: 'standalone',
+  // Ensure client-side rendering
   reactStrictMode: true,
+  // Force dynamic rendering
+  trailingSlash: false,
 };
 
 export default nextConfig;

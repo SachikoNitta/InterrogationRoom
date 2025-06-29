@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 export default function Dashboard() {
   const [summaries, setSummaries] = useState<any[]>([])
   const [cases, setCases] = useState<Record<string, any>>({})

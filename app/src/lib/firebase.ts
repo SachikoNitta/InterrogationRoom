@@ -1,5 +1,5 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -12,9 +12,20 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Initialize Firebase only in browser environment
+let app: any = null;
+let auth: any = null;
 
-// Export Firebase instances
+// Only initialize Firebase on the client side
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  try {
+    // Check if app already exists
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+  } catch (error) {
+    console.error('Firebase initialization failed:', error);
+  }
+}
+
+// Export Firebase instances (may be null during SSR)
 export { app, auth };
