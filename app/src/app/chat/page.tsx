@@ -27,6 +27,7 @@ function ChatPageContent() {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [summaryLoading, setSummaryLoading] = useState<boolean>(false)
   const [recipient, setRecipient] = useState<"suspect" | "assistant">("suspect")
+  const [isTypewriting, setIsTypewriting] = useState(false)
 
   const drawerWidth = 400
 
@@ -237,34 +238,116 @@ function ChatPageContent() {
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let done = false
+      let aiResponse = ""
       
+      // まず完全なレスポンスを収集
       while (!done) {
         const { value, done: doneReading } = await reader.read()
         done = doneReading
         if (!value) continue
         
         const chunk = decoder.decode(value)
-        
-        // チャンクをリアルタイムで表示
+        aiResponse += chunk
+      }
+      
+      // タイプライター効果で文字を一つずつ表示
+      setIsTypewriting(true)
+      const typewriterDelay = 50 // ミリ秒 (調整可能: 15=高速, 30=通常, 50=ゆっくり)
+      let typewriterCancelled = false
+      
+      // タイプライター効果をスキップする関数
+      const skipTypewriter = () => {
+        typewriterCancelled = true
+        setIsTypewriting(false)
         setMessages((prev) => {
           const updated = [...prev]
           updated[updated.length - 1] = {
             ...updated[updated.length - 1],
-            content: updated[updated.length - 1].content + chunk,
+            content: aiResponse,
           }
           return updated
         })
       }
+      
+      // 一時的にクリックイベントリスナーを追加（タイプライター中のスキップ用）
+      const handleSkipClick = () => skipTypewriter()
+      document.addEventListener('click', handleSkipClick, { once: true })
+      
+      for (let i = 0; i <= aiResponse.length && !typewriterCancelled; i++) {
+        const partialText = aiResponse.substring(0, i)
+        
+        setMessages((prev) => {
+          const updated = [...prev]
+          updated[updated.length - 1] = {
+            ...updated[updated.length - 1],
+            content: partialText,
+          }
+          return updated
+        })
+        
+        // 最後の文字でない場合のみ待機
+        if (i < aiResponse.length && !typewriterCancelled) {
+          await new Promise(resolve => setTimeout(resolve, typewriterDelay))
+        }
+      }
+      
+      // クリーンアップ
+      document.removeEventListener('click', handleSkipClick)
+      setIsTypewriting(false)
+      
+      // メッセージ送信完了後にcaseDataを更新
+      if (caseData && aiResponse) {
+        const userLogEntry: LogEntry = { role: "user", message: userMessage }
+        const aiLogEntry: LogEntry = { role: "model", message: aiResponse }
+        
+        setCaseData((prevCaseData) => {
+          if (!prevCaseData) return prevCaseData
+          
+          const updatedCaseData = { ...prevCaseData }
+          
+          if (recipient === "assistant") {
+            // 新米刑事の場合はassistantLogsに追加
+            updatedCaseData.assistantLogs = [...(prevCaseData.assistantLogs || []), userLogEntry, aiLogEntry]
+          } else {
+            // 容疑者の場合はlogsに追加
+            updatedCaseData.logs = [...(prevCaseData.logs || []), userLogEntry, aiLogEntry]
+          }
+          
+          return updatedCaseData
+        })
+      }
     } catch (error) {
       console.error("チャット送信エラー:", error)
+      const errorMessage = "エラーが発生しました。もう一度お試しください。"
+      
       setMessages((prev) => {
         const updated = [...prev]
         updated[updated.length - 1] = {
           ...updated[updated.length - 1],
-          content: "エラーが発生しました。もう一度お試しください。",
+          content: errorMessage,
         }
         return updated
       })
+      
+      // エラーの場合もcaseDataを更新（エラーメッセージとして）
+      if (caseData) {
+        const userLogEntry: LogEntry = { role: "user", message: userMessage }
+        const errorLogEntry: LogEntry = { role: "model", message: errorMessage }
+        
+        setCaseData((prevCaseData) => {
+          if (!prevCaseData) return prevCaseData
+          
+          const updatedCaseData = { ...prevCaseData }
+          
+          if (recipient === "assistant") {
+            updatedCaseData.assistantLogs = [...(prevCaseData.assistantLogs || []), userLogEntry, errorLogEntry]
+          } else {
+            updatedCaseData.logs = [...(prevCaseData.logs || []), userLogEntry, errorLogEntry]
+          }
+          
+          return updatedCaseData
+        })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -340,9 +423,14 @@ function ChatPageContent() {
                     {m.role === "model" && m.content === "" ? (
                       <Spinner size="small" />
                     ) : (
-                      <span dangerouslySetInnerHTML={{
-                        __html: m.content.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br />"),
-                      }} />
+                      <div className="relative">
+                        <span dangerouslySetInnerHTML={{
+                          __html: m.content.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br />"),
+                        }} />
+                        {m.role === "model" && isTypewriting && i === messages.length - 1 && (
+                          <span className="inline-block w-2 h-5 bg-gray-600 ml-1 animate-pulse">|</span>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -360,6 +448,7 @@ function ChatPageContent() {
               variant={recipient === "suspect" ? "default" : "outline"}
               onClick={() => setRecipient("suspect")}
               size="sm"
+              disabled={isLoading || isTypewriting}
             >
               容疑者
             </Button>
@@ -368,6 +457,7 @@ function ChatPageContent() {
               variant={recipient === "assistant" ? "default" : "outline"}
               onClick={() => setRecipient("assistant")}
               size="sm"
+              disabled={isLoading || isTypewriting}
             >
               新米刑事
             </Button>
@@ -376,11 +466,11 @@ function ChatPageContent() {
             <Input
               value={input}
               onChange={handleInputChange}
-              placeholder="Type your message..."
+              placeholder={isTypewriting ? "AIが回答中... (クリックでスキップ)" : "Type your message..."}
               className="flex-grow"
-              disabled={isLoading}
+              disabled={isLoading || isTypewriting}
             />
-            <Button type="submit" disabled={isLoading || input.trim() === ""}>
+            <Button type="submit" disabled={isLoading || isTypewriting || input.trim() === ""}>
               <Send className="h-4 w-4" />
             </Button>
             <Button

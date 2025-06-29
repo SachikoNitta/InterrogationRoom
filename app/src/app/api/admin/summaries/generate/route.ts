@@ -159,5 +159,5 @@ async function generateInvestigationScenario(keywords: string[]): Promise<any> {
 
 // サマリーID を生成
 function generateSummaryId(): string {
-  return 'summary_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  return 'summary_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
 }
