@@ -2,32 +2,29 @@
 import type React from "react"
 import { useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { signInWithGoogle } from "@/lib/auth"
+import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
-import { getAuth, onAuthStateChanged } from "firebase/auth"
 
 export default function LoginPage() {
+  const { user, signIn, loading } = useAuth()
   const router = useRouter()
+
   useEffect(() => {
-    const auth = getAuth()
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.replace("/dashboard")
-      }
-    })
-    return () => unsubscribe()
-  }, [router])
+    if (user) {
+      router.replace("/dashboard")
+    }
+  }, [user, router])
 
   const handleGoogleLogin = useCallback(async () => {
     try {
-      const result = await signInWithGoogle()
-      const user = result.user
-      if (user) {
-        const idToken = await user.getIdToken()
+      await signIn()
+      // Call the API login endpoint to register/login the user
+      const token = await user?.getIdToken()
+      if (token) {
         const res = await fetch(`/api/auth/login`, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${idToken}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         })
@@ -39,7 +36,7 @@ export default function LoginPage() {
       alert("ログインに失敗しました")
       console.error("Login error:", e)
     }
-  }, [])
+  }, [signIn, user])
 
   return (
     <div
@@ -54,8 +51,13 @@ export default function LoginPage() {
         <h1 className="text-6xl font-bold text-gray-800 mb-8">Interrogation Room</h1>
       </div>
       <div className="flex flex-col space-y-6 w-80">
-        <Button size="lg" className="h-16 text-xl" onClick={handleGoogleLogin}>
-          Googleでログイン
+        <Button 
+          size="lg" 
+          className="h-16 text-xl" 
+          onClick={handleGoogleLogin}
+          disabled={loading}
+        >
+          {loading ? 'ログイン中...' : 'Googleでログイン'}
         </Button>
       </div>
     </div>

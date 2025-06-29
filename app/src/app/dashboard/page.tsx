@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Play, Star, LogOut } from "lucide-react"
-import { useAuthState } from "react-firebase-hooks/auth"
-import { auth, waitForIdToken } from "@/lib/auth"
-import { signOut } from "firebase/auth"
+import { useAuth } from "@/contexts/AuthContext"
+import { useAuthenticatedFetch } from "@/hooks/useAuthenticatedFetch"
+import { useRequireAuth } from "@/hooks/useRequireAuth"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
@@ -15,26 +15,20 @@ import { Badge } from "@/components/ui/badge"
 export default function Dashboard() {
   const [summaries, setSummaries] = useState<any[]>([])
   const [cases, setCases] = useState<Record<string, any>>({})
-  const [user] = useAuthState(auth)
+  const { signOut } = useAuth()
+  const authenticatedFetch = useAuthenticatedFetch()
+  const { user, loading } = useRequireAuth()
   const router = useRouter()
 
   const handleSignOut = async () => {
-    await signOut(auth)
+    await signOut()
     router.push("/")
   }
 
   useEffect(() => {
     const fetchSummaries = async () => {
       try {
-        const idToken = await waitForIdToken()
-        if (!idToken) throw new Error("No user signed in")
-        const res = await fetch(`/api/summaries`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-        })
+        const res = await authenticatedFetch(`/api/summaries`)
         if (!res.ok) throw new Error("Failed to fetch summaries")
         const data = await res.json()
         setSummaries(data)
@@ -42,21 +36,15 @@ export default function Dashboard() {
         setSummaries([])
       }
     }
-    fetchSummaries()
-  }, [user])
+    if (user) {
+      fetchSummaries()
+    }
+  }, [user, authenticatedFetch])
 
   useEffect(() => {
     const fetchCases = async () => {
       try {
-        const idToken = await waitForIdToken()
-        if (!idToken) throw new Error("No user signed in")
-        const res = await fetch(`/api/cases`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-        })
+        const res = await authenticatedFetch(`/api/cases`)
         if (!res.ok) throw new Error("Failed to fetch cases")
         const data = await res.json()
         // 配列→summaryIdをキーにしたオブジェクトへ変換
@@ -70,8 +58,14 @@ export default function Dashboard() {
         setCases({})
       }
     }
-    fetchCases()
-  }, [user])
+    if (user) {
+      fetchCases()
+    }
+  }, [user, authenticatedFetch])
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  }
 
   return (
     <div className="min-h-screen bg-background">
