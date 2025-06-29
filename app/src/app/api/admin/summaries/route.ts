@@ -8,13 +8,12 @@ export async function GET(request: NextRequest) {
   if (adminCheck) return adminCheck;
 
   try {
-    // Get investigation scenarios from 'summaries' collection
+    // Get investigation scenarios from 'summaries' collection (Python backend compatible)
     const summariesRef = adminDB.collection('summaries');
-    const snapshot = await summariesRef.orderBy('generatedAt', 'desc').get();
+    const snapshot = await summariesRef.get();
     
     const summaries = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
+      ...doc.data() // Python backend returns data directly with summaryId included
     }));
 
     return NextResponse.json({ summaries });

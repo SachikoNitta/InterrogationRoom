@@ -107,50 +107,6 @@ export default function AdminPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* 管理者機能の概要カード */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                <Key className="w-5 h-5 text-blue-500" />
-                <CardTitle className="ml-2 text-sm font-medium">
-                  キーワード管理
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-gray-500">
-                  サマリー生成用のキーワードを管理
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                <FileText className="w-5 h-5 text-green-500" />
-                <CardTitle className="ml-2 text-sm font-medium">
-                  事件シナリオ管理
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-gray-500">
-                  AI による事件シナリオの生成と管理
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                <Users className="w-5 h-5 text-purple-500" />
-                <CardTitle className="ml-2 text-sm font-medium">
-                  ユーザー管理
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-gray-500">
-                  ユーザーアカウントと権限の管理
-                </p>
-              </CardContent>
-            </Card>
-          </div>
 
           {/* タブ式管理インターフェース */}
           <Tabs defaultValue="keywords" className="w-full">

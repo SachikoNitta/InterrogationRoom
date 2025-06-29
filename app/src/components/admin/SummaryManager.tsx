@@ -17,8 +17,8 @@ import { FileText, Play, Search, Plus } from 'lucide-react';
 import { Summary } from '@/types/summary';
 
 interface InvestigationSummary extends Summary {
-  id: string;
-  generatedAt: any;
+  // Summary already has summaryId from Python backend
+  generatedAt?: any;
 }
 
 export function SummaryManager() {
@@ -70,10 +70,15 @@ export function SummaryManager() {
 
       if (response.ok) {
         loadSummaries();
+        alert('事件シナリオが正常に生成されました！');
       } else {
         const errorData = await response.json();
         console.error('Failed to generate summary:', errorData);
-        alert(`生成に失敗しました: ${errorData.error}`);
+        if (errorData.details?.includes('No keywords available')) {
+          alert('キーワードが登録されていません。先にキーワード管理タブでキーワードを追加してください。');
+        } else {
+          alert(`生成に失敗しました: ${errorData.details || errorData.error}`);
+        }
       }
     } catch (error) {
       console.error('Failed to generate summary:', error);
@@ -143,6 +148,8 @@ export function SummaryManager() {
           </div>
           <p className="text-sm text-gray-500 mt-2">
             ランダムなキーワードを使用してAIが架空の事件シナリオを生成します。
+            <br />
+            <span className="text-amber-600">※ 事前にキーワード管理でキーワードを追加してください</span>
           </p>
         </CardContent>
       </Card>
@@ -165,7 +172,7 @@ export function SummaryManager() {
           <div className="space-y-4">
             {filteredSummaries.map((summary) => (
               <div
-                key={summary.id}
+                key={summary.summaryId}
                 className="border rounded-lg p-4 space-y-3"
               >
                 <div className="flex items-center justify-between">

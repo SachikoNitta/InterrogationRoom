@@ -9,10 +9,10 @@ export async function GET(request: NextRequest) {
 
   try {
     const keywordsRef = adminDB.collection('keywords');
-    const snapshot = await keywordsRef.orderBy('createdAt', 'desc').get();
+    const snapshot = await keywordsRef.get();
     
     const keywords = snapshot.docs.map(doc => ({
-      id: doc.id,
+      keywordId: doc.id,
       ...doc.data()
     }));
 
@@ -32,28 +32,23 @@ export async function POST(request: NextRequest) {
   if (adminCheck) return adminCheck;
 
   try {
-    const { keyword, category, description } = await request.json();
+    const { word } = await request.json();
 
-    if (!keyword) {
+    if (!word) {
       return NextResponse.json(
-        { error: 'Keyword is required' }, 
+        { error: 'Word is required' }, 
         { status: 400 }
       );
     }
 
     const keywordData = {
-      keyword: keyword.trim(),
-      category: category || 'general',
-      description: description || '',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      active: true
+      word: word.trim()
     };
 
     const docRef = await adminDB.collection('keywords').add(keywordData);
 
     return NextResponse.json({
-      id: docRef.id,
+      keywordId: docRef.id,
       ...keywordData
     }, { status: 201 });
 

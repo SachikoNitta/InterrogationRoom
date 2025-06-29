@@ -12,7 +12,14 @@ export async function PUT(
 
   try {
     const { keywordId } = await params;
-    const body = await request.json();
+    const { word } = await request.json();
+    
+    if (!word) {
+      return NextResponse.json(
+        { error: 'Word is required' },
+        { status: 400 }
+      );
+    }
     
     const keywordRef = adminDB.collection('keywords').doc(keywordId);
     const doc = await keywordRef.get();
@@ -24,21 +31,15 @@ export async function PUT(
       );
     }
 
-    // 更新データを準備（undefinedのフィールドは除外）
-    const updateData: any = {
-      updatedAt: new Date()
+    const updateData = {
+      word: word.trim()
     };
-
-    if (body.keyword !== undefined) updateData.keyword = body.keyword.trim();
-    if (body.category !== undefined) updateData.category = body.category;
-    if (body.description !== undefined) updateData.description = body.description;
-    if (body.active !== undefined) updateData.active = body.active;
 
     await keywordRef.update(updateData);
 
     const updatedDoc = await keywordRef.get();
     return NextResponse.json({
-      id: updatedDoc.id,
+      keywordId: updatedDoc.id,
       ...updatedDoc.data()
     });
 

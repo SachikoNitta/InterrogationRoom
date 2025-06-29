@@ -10,26 +10,45 @@ export async function POST(request: NextRequest) {
 
   try {
     const { keywordCount = 3 } = await request.json();
+    console.log('🚀 Starting summary generation with keywordCount:', keywordCount);
+
+    // 環境変数チェック
+    const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    if (!projectId) {
+      throw new Error('Google Cloud Project ID environment variable is not set. Please set GOOGLE_CLOUD_PROJECT_ID, GOOGLE_CLOUD_PROJECT, or NEXT_PUBLIC_FIREBASE_PROJECT_ID');
+    }
 
     // ランダムなキーワードを取得
+    console.log('📝 Getting random keywords...');
     const selectedKeywords = await getRandomKeywords(keywordCount);
+    console.log('🔑 Selected keywords:', selectedKeywords);
+    
+    if (selectedKeywords.length === 0) {
+      throw new Error('No keywords available in database. Please add keywords first.');
+    }
     
     // AI を使用してサマリー（事件シナリオ）を生成
+    console.log('🤖 Generating AI scenario...');
     const summaryData = await generateInvestigationScenario(selectedKeywords);
+    console.log('✅ AI generation completed');
 
-    // summaries コレクションに保存（事件シナリオとして）
-    const summaryRef = await adminDB.collection('summaries').add({
-      ...summaryData,
-      generatedAt: new Date()
-    });
+    // summaries コレクションに保存（Python backend と同じ構造）
+    console.log('💾 Saving to database...');
+    const docRef = await adminDB.collection('summaries').add(summaryData);
+    
+    // Python backend と同様に summaryId をドキュメント ID に設定して更新
+    summaryData.summaryId = docRef.id;
+    await docRef.update({ summaryId: summaryData.summaryId });
+    
+    console.log('✅ Summary generation completed successfully:', summaryData.summaryId);
 
     return NextResponse.json({
-      id: summaryRef.id,
       ...summaryData
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Error generating summary:', error);
+    console.error('❌ Error generating summary:', error);
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
       { 
         error: 'Failed to generate summary', 
@@ -44,31 +63,48 @@ export async function POST(request: NextRequest) {
 async function getRandomKeywords(count: number): Promise<string[]> {
   const keywordsSnapshot = await adminDB
     .collection('keywords')
-    .where('active', '==', true)
     .get();
   
-  const allKeywords = keywordsSnapshot.docs.map(doc => doc.data().keyword);
+  const allKeywords = keywordsSnapshot.docs.map(doc => doc.data().word);
   
-  // Fisher-Yates シャッフルアルゴリズムでランダムに選択
+  if (!allKeywords.length) {
+    return [];
+  }
+  
+  if (count >= allKeywords.length) {
+    // Fisher-Yates シャッフル
+    const shuffled = [...allKeywords];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+  
+  // ランダムサンプル
   const shuffled = [...allKeywords];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   
-  return shuffled.slice(0, Math.min(count, shuffled.length));
+  return shuffled.slice(0, count);
 }
 
 // AI を使用して事件シナリオを生成（Python backend の generate_summary と同じ）
 async function generateInvestigationScenario(keywords: string[]): Promise<any> {
-  const vertex_ai = new VertexAI({
-    project: process.env.GOOGLE_CLOUD_PROJECT_ID!,
-    location: 'us-central1'
-  });
+  try {
+    console.log('🔧 Initializing Vertex AI...');
+    const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    const vertex_ai = new VertexAI({
+      project: projectId!,
+      location: 'us-central1'
+    });
 
-  const model = vertex_ai.preview.getGenerativeModel({
-    model: 'gemini-1.5-pro-002'
-  });
+    console.log('🔧 Getting generative model...');
+    const model = vertex_ai.preview.getGenerativeModel({
+      model: 'gemini-1.5-pro-002'
+    });
 
   // Python backend と同じプロンプト
   const prompt = `架空の事件のデータを作成し、以下のJSON形式で出力してください。suspectInfoは必ず一人、取り調べできる具体的な人物の身元を挙げてください。
@@ -129,35 +165,41 @@ async function generateInvestigationScenario(keywords: string[]): Promise<any> {
 
 キーワード: ${keywords.join(', ')}`;
 
-  const result = await model.generateContent(prompt);
-  const response = result.response;
-  const text = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    console.log('📤 Sending prompt to AI...');
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    const text = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    console.log('📥 AI response received, length:', text.length);
 
-  // JSON ブロックを抽出（Python backend の text_utils.extract_json_block と同じ）
-  const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/```\s*([\s\S]*?)\s*```/) || text.match(/\{[\s\S]*\}/);
-  
-  if (!jsonMatch) {
-    throw new Error('No JSON block found in the AI response');
-  }
-
-  try {
-    const summaryData = JSON.parse(jsonMatch[1] || jsonMatch[0]);
+    // JSON ブロックを抽出（Python backend の text_utils.extract_json_block と同じ）
+    console.log('🔍 Extracting JSON from AI response...');
+    const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/```\s*([\s\S]*?)\s*```/) || text.match(/\{[\s\S]*\}/);
     
-    if (!summaryData.summaryName) {
-      throw new Error("Invalid summary response format: 'summaryName' not found");
+    if (!jsonMatch) {
+      console.error('❌ No JSON block found in AI response:', text);
+      throw new Error('No JSON block found in the AI response');
     }
 
-    // summaryId を生成
-    summaryData.summaryId = generateSummaryId();
+    try {
+      const jsonText = jsonMatch[1] || jsonMatch[0];
+      console.log('🔧 Parsing JSON:', jsonText.substring(0, 200) + '...');
+      const summaryData = JSON.parse(jsonText);
+      
+      if (!summaryData.summaryName) {
+        throw new Error("Invalid summary response format: 'summaryName' not found");
+      }
+
+      console.log('✅ Successfully parsed summary data:', summaryData.summaryName);
+      return summaryData;
+      
+    } catch (parseError) {
+      console.error('❌ JSON parsing failed:', parseError);
+      throw new Error(`Failed to parse AI response as JSON: ${parseError instanceof Error ? parseError.message : 'Parse error'}`);
+    }
     
-    return summaryData;
-    
-  } catch (parseError) {
-    throw new Error(`Failed to parse AI response as JSON: ${parseError instanceof Error ? parseError.message : 'Parse error'}`);
+  } catch (error) {
+    console.error('❌ Error in generateInvestigationScenario:', error);
+    throw error;
   }
 }
 
-// サマリーID を生成
-function generateSummaryId(): string {
-  return 'summary_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
-}
