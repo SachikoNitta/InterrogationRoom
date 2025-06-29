@@ -4,10 +4,10 @@ import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { FileText, Calendar, MessageSquare, Search, BarChart3, User, MapPin, Hash, Shield } from "lucide-react"
-import type { Evidence, Statement, AnalysisResult, SuspectInfo } from "@/types/summary"
+import type { Evidence, Statement, AnalysisResult, SuspectInfo, Summary } from "@/types/summary"
 
 interface SummaryDrawerContentProps {
-  summary: any
+  summary: Summary | null;
   summaryLoading: boolean
 }
 
@@ -15,7 +15,7 @@ export const SummaryDrawerContent: React.FC<SummaryDrawerContentProps> = ({ summ
   if (summaryLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Spinner size={32} />
+        <Spinner size="medium" />
       </div>
     )
   }
@@ -79,7 +79,7 @@ export const SummaryDrawerContent: React.FC<SummaryDrawerContentProps> = ({ summ
             <div className="flex items-center gap-2 w-full">
               <Shield className="w-5 h-5" />
               <span className="font-semibold">容疑者情報</span>
-              {summary.suspectInfo?.length > 0 && (
+              {summary.suspectInfo && summary.suspectInfo.length > 0 && (
                 <Badge variant="secondary" className="ml-auto mr-2">
                   {summary.suspectInfo.length}名
                 </Badge>
@@ -128,7 +128,7 @@ export const SummaryDrawerContent: React.FC<SummaryDrawerContentProps> = ({ summ
             <div className="flex items-center gap-2 w-full">
               <MessageSquare className="w-5 h-5" />
               <span className="font-semibold">供述調書</span>
-              {summary.statements?.length > 0 && (
+              {summary.statements && summary.statements.length > 0 && (
                 <Badge variant="secondary" className="ml-auto mr-2">
                   {summary.statements.length}件
                 </Badge>
@@ -169,7 +169,7 @@ export const SummaryDrawerContent: React.FC<SummaryDrawerContentProps> = ({ summ
             <div className="flex items-center gap-2 w-full">
               <Search className="w-5 h-5" />
               <span className="font-semibold">物的証拠</span>
-              {summary.physicalEvidence?.length > 0 && (
+              {summary.physicalEvidence && summary.physicalEvidence.length > 0 && (
                 <Badge variant="secondary" className="ml-auto mr-2">
                   {summary.physicalEvidence.length}件
                 </Badge>
@@ -228,7 +228,7 @@ export const SummaryDrawerContent: React.FC<SummaryDrawerContentProps> = ({ summ
             <div className="flex items-center gap-2 w-full">
               <BarChart3 className="w-5 h-5" />
               <span className="font-semibold">分析結果</span>
-              {summary.analysisResults?.length > 0 && (
+              {summary.analysisResults && summary.analysisResults.length > 0 && (
                 <Badge variant="secondary" className="ml-auto mr-2">
                   {summary.analysisResults.length}件
                 </Badge>

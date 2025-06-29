@@ -1,7 +1,6 @@
 "use client"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { auth } from "@/lib/auth"
-import { Entrance } from "@/components/Entrance"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 

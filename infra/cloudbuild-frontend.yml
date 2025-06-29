@@ -15,6 +15,14 @@ steps:
       - '--image=gcr.io/$PROJECT_ID/next-app'
       - '--region=asia-northeast1'
       - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID'
+      - '--set-env-vars=GOOGLE_CLOUD_LOCATION=asia-northeast1'
+      - '--memory=2Gi'
+      - '--cpu=1'
+      - '--timeout=300'
+      - '--concurrency=1000'
+      - '--max-instances=10'
 
 images:
   - 'gcr.io/$PROJECT_ID/next-app'

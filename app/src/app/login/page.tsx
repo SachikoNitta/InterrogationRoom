@@ -24,8 +24,7 @@ export default function LoginPage() {
       const user = result.user
       if (user) {
         const idToken = await user.getIdToken()
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
-        const res = await fetch(`${apiBaseUrl}/api/auth/login`, {
+        const res = await fetch(`/api/auth/login`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${idToken}`,

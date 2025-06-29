@@ -37,14 +37,12 @@ bash setup.sh
 ```
 
 ###  Cloud Buildによるビルド＆デプロイ
-フロントエンドをデプロイ
+フロントエンド（Next.jsアプリ：すべてのAPIロジックを含む）をデプロイ
 ```sh
 gcloud builds submit --config=cloudbuild-frontend.yml ..
 ```
-バックエンドをデプロイ
-```sh
-gcloud builds submit --config=cloudbuild-backend.yml ..
-```
+
+注意：バックエンドはNext.js API routesに統合されたため、別途デプロイは不要です。
 
 ### アプリの公開
 - GCのCloud Runのプロダクトページに移動
@@ -65,6 +63,15 @@ gcloud builds submit --config=cloudbuild-backend.yml ..
 - 秘密鍵をSecret Managerに保存
 ```sh
 gcloud secrets create firebase-service-account --data-file=/path/to/serviceAccountKey.json
+```
+
+### 環境変数の設定
+Next.js APIで使用する環境変数をCloud Runサービスに設定：
+```sh
+# Firebase認証情報（Secret Managerから取得）
+gcloud run services update interrogation-room-frontend \
+  --set-env-vars GOOGLE_CLOUD_PROJECT=interrogation-room \
+  --region asia-northeast1
 ```
 
 ### Firestoreのインデックスを作成

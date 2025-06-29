@@ -15,7 +15,6 @@ import { Badge } from "@/components/ui/badge"
 export default function Dashboard() {
   const [summaries, setSummaries] = useState<any[]>([])
   const [cases, setCases] = useState<Record<string, any>>({})
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
   const [user] = useAuthState(auth)
   const router = useRouter()
 
@@ -29,7 +28,7 @@ export default function Dashboard() {
       try {
         const idToken = await waitForIdToken()
         if (!idToken) throw new Error("No user signed in")
-        const res = await fetch(`${apiBaseUrl}/api/summaries`, {
+        const res = await fetch(`/api/summaries`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -44,14 +43,14 @@ export default function Dashboard() {
       }
     }
     fetchSummaries()
-  }, [apiBaseUrl, user])
+  }, [user])
 
   useEffect(() => {
     const fetchCases = async () => {
       try {
         const idToken = await waitForIdToken()
         if (!idToken) throw new Error("No user signed in")
-        const res = await fetch(`${apiBaseUrl}/api/cases`, {
+        const res = await fetch(`/api/cases`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -72,7 +71,7 @@ export default function Dashboard() {
       }
     }
     fetchCases()
-  }, [apiBaseUrl, user])
+  }, [user])
 
   return (
     <div className="min-h-screen bg-background">

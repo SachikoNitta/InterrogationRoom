@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, Suspense } from "react"
 import { useRouter, useSearchParams, notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,7 +11,7 @@ import { auth, waitForIdToken } from "@/lib/auth"
 import { Summary } from "@/types/summary"
 import { SummaryDrawerContent } from "@/components/SummaryDrawerContent"
 
-export default function ChatPage() {
+function ChatPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const summaryId = searchParams.get("summaryId") || ""
@@ -24,7 +24,7 @@ export default function ChatPage() {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [summaryLoading, setSummaryLoading] = useState<boolean>(false)
   const [recipient, setRecipient] = useState<"suspect" | "assistant">("suspect")
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+
   const drawerWidth = 400
 
   // 事件の概要を取得
@@ -45,7 +45,7 @@ export default function ChatPage() {
           console.error("❌ No ID token found, redirecting to not found")
           notFound()
         }
-        const res = await fetch(`${apiBaseUrl}/api/summaries/${summaryId}`, {
+        const res = await fetch(`/api/summaries/${summaryId}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -76,7 +76,7 @@ export default function ChatPage() {
       })
     }
     
-  }, [apiBaseUrl, summaryId])
+  }, [summaryId])
 
   // リロード時にメッセージを更新するために必要？
   useEffect(() => {
@@ -98,7 +98,7 @@ export default function ChatPage() {
 
       // 既存Caseを取得
       const fetchCase = async () => {
-        return await fetch(`${apiBaseUrl}/api/cases/summary/${summaryId}`, {
+        return await fetch(`/api/cases/summary/${summaryId}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -110,7 +110,7 @@ export default function ChatPage() {
       // Caseを新規作成
       const createCase = async () => {
         console.log("Case not found, creating new case")
-        return await fetch(`${apiBaseUrl}/api/cases`, {
+        return await fetch(`/api/cases`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -145,7 +145,7 @@ export default function ChatPage() {
 
     }
     fetchOrCreateCase()
-  }, [summaryId, apiBaseUrl])
+  }, [summaryId])
 
   // recipientまたはcaseDataが変わったときにmessagesを切り替える
   useEffect(() => {
@@ -190,59 +190,81 @@ export default function ChatPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!input.trim()) return
-    setMessages((prev) => [...prev, { role: "user", content: input }, { role: "model", content: "" }])
+    
+    const userMessage = input.trim()
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }, { role: "model", content: "" }])
     setInput("")
     setIsLoading(true)
-    const idToken = await waitForIdToken()
-    if (!idToken) {
-      notFound()
-    }
-
-    // 送信先によってエンドポイントを切り替え
-    const geEndpoint = () => {
-      if (recipient === "assistant") {
-      return `${apiBaseUrl}/api/cases/${caseData?.caseId}/chat/assistant`
+    
+    try {
+      const idToken = await waitForIdToken()
+      if (!idToken) {
+        notFound()
+        return
       }
-      return `${apiBaseUrl}/api/cases/${caseData?.caseId}/chat`
-    }
-    const endpoint = geEndpoint()
 
-    // チャットを送信
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message: input, recipient }),
-    })
-    if (!res.body) return
-    const reader = res.body.getReader()
-    const decoder = new TextDecoder()
-    let done = false
-    while (!done) {
-      const { value, done: doneReading } = await reader.read()
-      done = doneReading
-      if (!value) continue
-      const chunk = decoder.decode(value)
-      for (const char of chunk) {
-        await new Promise((resolve) => setTimeout(resolve, 50))
+      // 送信先によってエンドポイントを切り替え
+      const geEndpoint = () => {
+        if (recipient === "assistant") {
+          return `/api/cases/${caseData?.caseId}/chat/assistant`
+        }
+        return `/api/cases/${caseData?.caseId}/chat`
+      }
+      const endpoint = geEndpoint()
+
+      // チャットを送信
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: userMessage, recipient }),
+      })
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`)
+      }
+
+      if (!res.body) {
+        throw new Error('No response body')
+      }
+
+      // ストリーミングレスポンスを処理
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let done = false
+      
+      while (!done) {
+        const { value, done: doneReading } = await reader.read()
+        done = doneReading
+        if (!value) continue
+        
+        const chunk = decoder.decode(value)
+        
+        // チャンクをリアルタイムで表示
         setMessages((prev) => {
           const updated = [...prev]
-          if (updated.length === 0) {
-            updated.push({ role: "user", content: input })
-            updated.push({ role: "model", content: char })
-          } else {
-            updated[updated.length - 1] = {
-              ...updated[updated.length - 1],
-              content: updated[updated.length - 1].content + char,
-            }
+          updated[updated.length - 1] = {
+            ...updated[updated.length - 1],
+            content: updated[updated.length - 1].content + chunk,
           }
           return updated
         })
       }
+    } catch (error) {
+      console.error("チャット送信エラー:", error)
+      setMessages((prev) => {
+        const updated = [...prev]
+        updated[updated.length - 1] = {
+          ...updated[updated.length - 1],
+          content: "エラーが発生しました。もう一度お試しください。",
+        }
+        return updated
+      })
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   // ケースの削除処理
@@ -250,24 +272,30 @@ export default function ChatPage() {
     if (!caseData?.caseId) return
     if (!window.confirm("取り調べデータを削除しますか？すべての会話履歴は削除されます。")) return
 
-    // ユーザーが取得できない場合は何もしない.
-    const idToken = waitForIdToken
-    if (!idToken) {
-      notFound()
-    }
+    try {
+      // ユーザーが取得できない場合は何もしない.
+      const idToken = await waitForIdToken()
+      if (!idToken) {
+        notFound()
+        return
+      }
 
-    // 削除リクエストを送信.
-    const res = await fetch(`${apiBaseUrl}/api/cases/${caseData?.caseId}`, {
-      method: "DELETE",
-      headers: {
-      Authorization: `Bearer ${idToken}`,
-      "Content-Type": "application/json",
-      },
-    })
-    if (res.ok) {
-      alert("取り調べデータを削除しました。")
-      router.push("/")
-    } else {
+      // 削除リクエストを送信.
+      const res = await fetch(`/api/cases/${caseData?.caseId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
+      })
+      if (res.ok) {
+        alert("取り調べデータを削除しました。")
+        router.push("/")
+      } else {
+        alert("取り調べデータの削除に失敗しました。")
+      }
+    } catch (error) {
+      console.error("削除エラー:", error)
       alert("取り調べデータの削除に失敗しました。")
     }
   }
@@ -307,7 +335,7 @@ export default function ChatPage() {
                       }`}
                   >
                     {m.role === "model" && m.content === "" ? (
-                      <Spinner size={24} />
+                      <Spinner size="small" />
                     ) : (
                       <span dangerouslySetInnerHTML={{
                         __html: m.content.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br />"),
@@ -369,5 +397,13 @@ export default function ChatPage() {
         </div>
       </Drawer>
     </div>
+  )
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Spinner size="large" /></div>}>
+      <ChatPageContent />
+    </Suspense>
   )
 }
