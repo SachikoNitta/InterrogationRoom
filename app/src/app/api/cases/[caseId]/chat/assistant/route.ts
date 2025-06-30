@@ -63,7 +63,7 @@ export async function POST(
     
     // Gemini モデルの設定（アシスタント用）
     const model = vertexAI.getGenerativeModel({
-      model: 'gemini-1.5-flash-002',
+      model: 'gemini-1.5-pro-002',
       systemInstruction: `あなたは新米刑事です。先輩刑事（ユーザー）と事件について相談しています。
 
 事件概要: ${summaryData?.overview || '詳細不明の事件'}

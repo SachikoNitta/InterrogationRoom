@@ -63,7 +63,7 @@ export async function POST(
     
     // Gemini モデルの設定
     const model = vertexAI.getGenerativeModel({
-      model: 'gemini-1.5-flash-002',
+      model: 'gemini-1.5-pro-002',
       systemInstruction: `あなたは容疑者役です。以下の事件の容疑者として振る舞ってください。
 
 事件概要: ${summaryData?.overview || '詳細不明の事件'}

@@ -103,7 +103,7 @@ async function generateInvestigationScenario(keywords: string[]): Promise<any> {
 
     console.log('🔧 Getting generative model...');
     const model = vertex_ai.getGenerativeModel({
-      model: 'gemini-1.5-flash-002'
+      model: 'gemini-1.5-pro-002'
     });
 
   // Python backend と同じプロンプト

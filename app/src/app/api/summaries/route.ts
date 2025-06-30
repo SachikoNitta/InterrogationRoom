@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     
     const vertexAI = new VertexAI({ project: projectId, location });
     const model = vertexAI.getGenerativeModel({
-      model: 'gemini-1.5-flash-002',
+      model: 'gemini-1.5-pro-002',
     });
     
     const prompt = `架空の事件のデータを作成し、以下のJSON形式で出力してください。suspectInfoは必ず一人、取り調べできる具体的な人物の身元を挙げてください。
