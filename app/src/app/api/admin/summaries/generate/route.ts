@@ -98,12 +98,12 @@ async function generateInvestigationScenario(keywords: string[]): Promise<any> {
     const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
     const vertex_ai = new VertexAI({
       project: projectId!,
-      location: 'us-central1'
+      location: 'asia-northeast1'
     });
 
     console.log('🔧 Getting generative model...');
-    const model = vertex_ai.preview.getGenerativeModel({
-      model: 'gemini-1.5-pro-002'
+    const model = vertex_ai.getGenerativeModel({
+      model: 'gemini-1.5-flash-002'
     });
 
   // Python backend と同じプロンプト
