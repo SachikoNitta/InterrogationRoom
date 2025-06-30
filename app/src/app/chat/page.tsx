@@ -234,71 +234,49 @@ function ChatPageContent() {
         throw new Error('No response body')
       }
 
-      // ストリーミングレスポンスを処理
+      // ストリーミングレスポンスを処理（リアルタイム + タイプライター効果）
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let done = false
-      let aiResponse = ""
+      let displayedText = ""
+      const typewriterDelay = 30 // ミリ秒 (調整可能: 15=高速, 30=通常, 50=ゆっくり)
       
-      // まず完全なレスポンスを収集
+      setIsTypewriting(true)
+
       while (!done) {
         const { value, done: doneReading } = await reader.read()
         done = doneReading
         if (!value) continue
         
-        const chunk = decoder.decode(value)
-        aiResponse += chunk
-      }
-      
-      // タイプライター効果で文字を一つずつ表示
-      setIsTypewriting(true)
-      const typewriterDelay = 50 // ミリ秒 (調整可能: 15=高速, 30=通常, 50=ゆっくり)
-      let typewriterCancelled = false
-      
-      // タイプライター効果をスキップする関数
-      const skipTypewriter = () => {
-        typewriterCancelled = true
-        setIsTypewriting(false)
-        setMessages((prev) => {
-          const updated = [...prev]
-          updated[updated.length - 1] = {
-            ...updated[updated.length - 1],
-            content: aiResponse,
-          }
-          return updated
-        })
-      }
-      
-      // 一時的にクリックイベントリスナーを追加（タイプライター中のスキップ用）
-      const handleSkipClick = () => skipTypewriter()
-      document.addEventListener('click', handleSkipClick, { once: true })
-      
-      for (let i = 0; i <= aiResponse.length && !typewriterCancelled; i++) {
-        const partialText = aiResponse.substring(0, i)
+        const chunk = decoder.decode(value).replace(/\n/g, ' ')
+        console.log("Received chunk:", chunk)
         
-        setMessages((prev) => {
-          const updated = [...prev]
-          updated[updated.length - 1] = {
-            ...updated[updated.length - 1],
-            content: partialText,
+        // チャンクの各文字を一文字ずつタイプライター効果で表示
+        for (let i = 0; i < chunk.length; i++) {
+          displayedText += chunk[i]
+          
+          setMessages((prev) => {
+            const updated = [...prev]
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+              content: displayedText,
+            }
+            return updated
+          })
+          
+          // 最後の文字でない場合のみ待機
+          if (i < chunk.length - 1 || !done) {
+            await new Promise(resolve => setTimeout(resolve, typewriterDelay))
           }
-          return updated
-        })
-        
-        // 最後の文字でない場合のみ待機
-        if (i < aiResponse.length && !typewriterCancelled) {
-          await new Promise(resolve => setTimeout(resolve, typewriterDelay))
         }
       }
-      
-      // クリーンアップ
-      document.removeEventListener('click', handleSkipClick)
+
       setIsTypewriting(false)
-      
+    
       // メッセージ送信完了後にcaseDataを更新
-      if (caseData && aiResponse) {
+      if (caseData && displayedText) {
         const userLogEntry: LogEntry = { role: "user", message: userMessage }
-        const aiLogEntry: LogEntry = { role: "model", message: aiResponse }
+        const aiLogEntry: LogEntry = { role: "model", message: displayedText }
         
         setCaseData((prevCaseData) => {
           if (!prevCaseData) return prevCaseData
@@ -466,7 +444,7 @@ function ChatPageContent() {
             <Input
               value={input}
               onChange={handleInputChange}
-              placeholder={isTypewriting ? "AIが回答中... (クリックでスキップ)" : "Type your message..."}
+              placeholder={isTypewriting ? "AIが回答中..." : "Type your message..."}
               className="flex-grow"
               disabled={isLoading || isTypewriting}
             />
