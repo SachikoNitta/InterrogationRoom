@@ -372,7 +372,7 @@ For global users, consider deploying to multiple regions:
 # Deploy to additional regions
 gcloud run deploy interrogation-app \
   --image=gcr.io/PROJECT_ID/next-app \
-  --region=us-central1 \
+  --region=asia-northeast1 \
   --service-account=interrogation-app@PROJECT_ID.iam.gserviceaccount.com
 ```
 
