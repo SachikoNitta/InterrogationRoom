@@ -29,8 +29,6 @@ export const SummaryDrawerContent: React.FC<SummaryDrawerContentProps> = ({ summ
     )
   }
 
-  console.log("Summary data:", summary)
-
   return (
     <div className="space-y-4 p-1">
       <Accordion type="multiple" defaultValue={["overview"]} className="space-y-2">
