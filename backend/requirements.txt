@@ -1,8 +1,0 @@
-fastapi
-firebase_admin
-google-auth
-google-cloud-firestore
-google-cloud-secret-manager
-gunicorn
-uvicorn
-vertexai
